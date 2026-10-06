@@ -1,0 +1,7966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ludix - Sandbox</title>
+<link rel="icon" href="data:,">
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#10151c;
+    color:white;
+}
+
+button,input{
+    font-family:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.hidden{
+    display:none !important;
+}
+
+.screen{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+}
+
+#loading{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#10151c;
+    color:white;
+    font-size:22px;
+    font-weight:bold;
+}
+
+#accountScreen{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+        radial-gradient(circle at 50% 30%,#273c59 0%,#10151c 55%,#080b0f 100%);
+}
+
+.account-box{
+    width:min(430px,92vw);
+    padding:30px;
+    border-radius:18px;
+    background:rgba(15,20,27,.96);
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 25px 80px rgba(0,0,0,.5);
+}
+
+.logo{
+    text-align:center;
+    font-size:42px;
+    font-weight:900;
+    margin-bottom:8px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#9da9b7;
+    margin-bottom:25px;
+}
+
+.tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:18px;
+}
+
+.tabs button{
+    flex:1;
+    border:0;
+    padding:12px;
+    border-radius:10px;
+    background:#202a36;
+    color:#b9c4d0;
+    font-weight:bold;
+}
+
+.tabs button.active{
+    background:#3c82f6;
+    color:white;
+}
+
+.form-group{
+    margin-bottom:14px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:6px;
+    color:#c9d3df;
+    font-size:14px;
+}
+
+.form-group input{
+    width:100%;
+    padding:13px;
+    border-radius:10px;
+    border:1px solid #344251;
+    outline:none;
+    background:#111820;
+    color:white;
+    font-size:16px;
+}
+
+.form-group input:focus{
+    border-color:#3c82f6;
+}
+
+.primary{
+    width:100%;
+    padding:14px;
+    border:0;
+    border-radius:10px;
+    background:#3c82f6;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+}
+
+.primary:hover{
+    background:#286fe0;
+}
+
+.message{
+    min-height:20px;
+    margin-top:14px;
+    text-align:center;
+    color:#ffcc66;
+    font-size:14px;
+}
+
+#menuScreen{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+        radial-gradient(circle at 50% 35%,#24435d 0%,#101923 55%,#080b0f 100%);
+}
+
+.menu-box{
+    width:min(560px,92vw);
+    padding:40px;
+    border-radius:20px;
+    text-align:center;
+    background:rgba(12,18,25,.95);
+    border:1px solid rgba(255,255,255,.1);
+    box-shadow:0 30px 100px rgba(0,0,0,.5);
+}
+
+.menu-box h1{
+    font-size:46px;
+    margin-bottom:8px;
+}
+
+.menu-box p{
+    color:#9da9b7;
+    margin-bottom:28px;
+}
+
+.menu-user{
+    margin-bottom:20px;
+    color:#73a9ff;
+    font-weight:bold;
+}
+
+.menu-buttons{
+    display:grid;
+    gap:12px;
+}
+
+.menu-buttons button{
+    padding:15px;
+    border:0;
+    border-radius:12px;
+    background:#263342;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+}
+
+.menu-buttons button:first-child{
+    background:#3c82f6;
+}
+
+.menu-buttons button:hover{
+    filter:brightness(1.12);
+}
+
+#worldScreen{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#0d131a;
+}
+
+.world-box{
+    width:min(620px,92vw);
+    padding:32px;
+    border-radius:18px;
+    background:#111923;
+    border:1px solid #263444;
+}
+
+.world-box h2{
+    margin-bottom:20px;
+}
+
+.info{
+    padding:15px;
+    border-radius:10px;
+    background:#182330;
+    margin-bottom:10px;
+    color:#c5d0dc;
+}
+
+.info strong{
+    color:white;
+}
+
+.world-buttons{
+    margin-top:22px;
+    display:flex;
+    gap:10px;
+}
+
+.world-buttons button{
+    flex:1;
+    padding:14px;
+    border:0;
+    border-radius:10px;
+    background:#3c82f6;
+    color:white;
+    font-weight:bold;
+}
+
+.world-buttons button:last-child{
+    background:#293544;
+}
+
+#gameScreen{
+    background:#000;
+}
+
+#gameCanvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+    image-rendering:auto;
+    cursor:crosshair;
+}
+
+#hud{
+    position:fixed;
+    left:12px;
+    top:12px;
+    z-index:20;
+    pointer-events:none;
+}
+
+.hud-panel{
+    min-width:210px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(5px);
+    border:1px solid rgba(255,255,255,.12);
+}
+
+.hud-row{
+    margin:4px 0;
+    font-size:13px;
+}
+
+.health-bar,
+.hunger-bar{
+    width:190px;
+    height:8px;
+    margin-top:4px;
+    background:#1d252d;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.health-fill{
+    height:100%;
+    width:100%;
+    background:#e74c3c;
+}
+
+.hunger-fill{
+    height:100%;
+    width:100%;
+    background:#f1c40f;
+}
+
+#saveStatus{
+    color:#8ed6a0;
+}
+
+#controlsHint{
+    position:fixed;
+    right:12px;
+    top:12px;
+    z-index:20;
+    padding:10px 12px;
+    border-radius:10px;
+    background:rgba(0,0,0,.45);
+    color:#d9e1ea;
+    font-size:12px;
+}
+
+#hotbar{
+    position:fixed;
+    left:50%;
+    bottom:18px;
+    transform:translateX(-50%);
+    z-index:30;
+    display:flex;
+    gap:5px;
+    padding:6px;
+    border-radius:10px;
+    background:rgba(0,0,0,.65);
+    border:1px solid rgba(255,255,255,.15);
+}
+
+.hot-slot{
+    position:relative;
+    width:54px;
+    height:54px;
+    border-radius:7px;
+    background:#1b242e;
+    border:2px solid #394653;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:27px;
+}
+
+.hot-slot.selected{
+    border-color:#fff;
+    box-shadow:0 0 0 2px #3c82f6;
+}
+
+.slot-number{
+    position:absolute;
+    top:2px;
+    left:4px;
+    font-size:10px;
+    color:#b8c3cf;
+}
+
+.slot-count{
+    position:absolute;
+    bottom:2px;
+    right:4px;
+    font-size:11px;
+    color:white;
+}
+
+#pauseOverlay{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.65);
+    backdrop-filter:blur(4px);
+}
+
+.pause-box{
+    width:min(400px,90vw);
+    padding:30px;
+    border-radius:18px;
+    background:#121a23;
+    text-align:center;
+    border:1px solid #334354;
+}
+
+.pause-box h2{
+    margin-bottom:22px;
+}
+
+.pause-box button{
+    width:100%;
+    padding:13px;
+    margin-top:9px;
+    border:0;
+    border-radius:10px;
+    background:#293747;
+    color:white;
+    font-weight:bold;
+}
+
+.pause-box button:first-of-type{
+    background:#3c82f6;
+}
+
+@media(max-width:700px){
+
+    .logo{
+        font-size:34px;
+    }
+
+    .hot-slot{
+        width:42px;
+        height:42px;
+        font-size:21px;
+    }
+
+    #hotbar{
+        gap:3px;
+        bottom:10px;
+    }
+
+    #controlsHint{
+        display:none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="loading">
+    Carregando Ludix...
+</div>
+
+<section id="accountScreen" class="screen hidden">
+
+    <div class="account-box">
+
+        <div class="logo">
+            🎮 ludix
+        </div>
+
+        <div class="subtitle">
+            Sandbox Survival
+        </div>
+
+        <div class="tabs">
+
+            <button id="loginTab" class="active">
+                Entrar
+            </button>
+
+            <button id="registerTab">
+                Criar conta
+            </button>
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="usernameInput">
+                Nome de usuário
+            </label>
+
+            <input
+                id="usernameInput"
+                type="text"
+                maxlength="20"
+                autocomplete="username"
+                placeholder="Seu nome"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="passwordInput">
+                Senha
+            </label>
+
+            <input
+                id="passwordInput"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Sua senha"
+            >
+
+        </div>
+
+        <div
+            id="confirmGroup"
+            class="form-group hidden"
+        >
+
+            <label for="confirmPasswordInput">
+                Confirmar senha
+            </label>
+
+            <input
+                id="confirmPasswordInput"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Digite novamente"
+            >
+
+        </div>
+
+        <button
+            id="accountAction"
+            class="primary"
+        >
+            Entrar
+        </button>
+
+        <div
+            id="accountMessage"
+            class="message"
+        ></div>
+
+    </div>
+
+</section>
+
+<section id="menuScreen" class="screen hidden">
+
+    <div class="menu-box">
+
+        <h1>
+            🌍 Ludix
+        </h1>
+
+        <div
+            id="menuUser"
+            class="menu-user"
+        >
+            Jogador
+        </div>
+
+        <p>
+            Um enorme mundo procedural esperando para ser explorado.
+        </p>
+
+        <div class="menu-buttons">
+
+            <button id="playButton">
+                🌎 JOGAR
+            </button>
+
+            <button id="worldInfoButton">
+                📖 Informações do mundo
+            </button>
+
+            <button id="logoutButton">
+                🚪 Sair da conta
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section id="worldScreen" class="screen hidden">
+
+    <div class="world-box">
+
+        <h2>
+            🌍 Mundo Ludix
+        </h2>
+
+        <div class="info">
+            <strong>Tamanho:</strong>
+            1.000.000 blocos para cada lado
+        </div>
+
+        <div class="info">
+            <strong>Geração:</strong>
+            Aleatória por regiões/chunks
+        </div>
+
+        <div class="info">
+            <strong>Biomas:</strong>
+            10 tipos diferentes
+        </div>
+
+        <div class="info">
+            <strong>Terreno:</strong>
+            Montanhas, mares, rios e cavernas
+        </div>
+
+        <div class="info">
+            <strong>Clima:</strong>
+            Chuva dinâmica e nuvens
+        </div>
+
+        <div class="info">
+            <strong>Salvamento:</strong>
+            Conta do jogador
+        </div>
+
+        <div class="info">
+            <strong>Regiões:</strong>
+            32 × 32 blocos
+        </div>
+
+        <div class="world-buttons">
+
+            <button id="worldBackButton">
+                Voltar
+            </button>
+
+            <button id="worldPlayButton">
+                Jogar
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section id="gameScreen" class="screen hidden">
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="hud">
+
+        <div class="hud-panel">
+
+            <div class="hud-row">
+                👤 <span id="hudUsername">Jogador</span>
+            </div>
+
+            <div class="hud-row">
+                ❤️ Vida:
+                <span id="healthText">100</span>
+            </div>
+
+            <div class="health-bar">
+                <div
+                    id="healthFill"
+                    class="health-fill"
+                ></div>
+            </div>
+
+            <div class="hud-row">
+                🍖 Fome:
+                <span id="hungerText">100</span>
+            </div>
+
+            <div class="hunger-bar">
+                <div
+                    id="hungerFill"
+                    class="hunger-fill"
+                ></div>
+            </div>
+
+            <div class="hud-row">
+                📍 X:
+                <span id="posX">0</span>
+                |
+                Y:
+                <span id="posY">0</span>
+            </div>
+
+            <div class="hud-row">
+                🗺️ Região:
+                <span id="chunkText">0, 0</span>
+            </div>
+
+            <div class="hud-row">
+                💾
+                <span id="saveStatus">
+                    Carregando...
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="controlsHint">
+        A/D ou ←/→ mover • Espaço pular • Clique quebrar/colocar • 1-9 selecionar • ESC pausar
+    </div>
+
+    <div id="hotbar"></div>
+
+</section>
+
+<div
+    id="pauseOverlay"
+    class="hidden"
+>
+
+    <div class="pause-box">
+
+        <h2>
+            ⏸️ Jogo pausado
+        </h2>
+
+        <button id="resumeButton">
+            Continuar
+        </button>
+
+        <button id="savePauseButton">
+            💾 Salvar agora
+        </button>
+
+        <button id="pauseMenuButton">
+            🏠 Menu principal
+        </button>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+/* ============================================================
+   SUPABASE
+============================================================ */
+
+const SUPABASE_URL =
+    "https://lvsegfkvggwlcxhaibgu.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_hBXJE72D0W6D4dF6mDhJHg_smw2yH9h";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* ============================================================
+   ELEMENTOS
+============================================================ */
+
+const loading =
+    document.getElementById("loading");
+
+const accountScreen =
+    document.getElementById("accountScreen");
+
+const menuScreen =
+    document.getElementById("menuScreen");
+
+const worldScreen =
+    document.getElementById("worldScreen");
+
+const gameScreen =
+    document.getElementById("gameScreen");
+
+const pauseOverlay =
+    document.getElementById("pauseOverlay");
+
+const usernameInput =
+    document.getElementById("usernameInput");
+
+const passwordInput =
+    document.getElementById("passwordInput");
+
+const confirmPasswordInput =
+    document.getElementById("confirmPasswordInput");
+
+const confirmGroup =
+    document.getElementById("confirmGroup");
+
+const loginTab =
+    document.getElementById("loginTab");
+
+const registerTab =
+    document.getElementById("registerTab");
+
+const accountAction =
+    document.getElementById("accountAction");
+
+const accountMessage =
+    document.getElementById("accountMessage");
+
+const menuUser =
+    document.getElementById("menuUser");
+
+const canvas =
+    document.getElementById("gameCanvas");
+
+const ctx =
+    canvas.getContext("2d");
+
+
+/* ============================================================
+   CONTA
+============================================================ */
+
+let currentPlayer = null;
+let currentUsername = "";
+let accountMode = "login";
+
+
+/* ============================================================
+   MUNDO
+============================================================ */
+
+const WORLD_LIMIT = 1000000;
+
+const TILE_SIZE = 32;
+
+const CHUNK_SIZE = 32;
+
+const SEA_LEVEL = 13;
+
+let worldSeed = 0;
+
+let exploredChunks = {};
+
+let modifiedBlocks = {};
+
+
+/* ============================================================
+   CLIMA
+============================================================ */
+
+const weather = {
+
+    raining:false,
+
+    cloudCover:0,
+
+    targetCloudCover:0,
+
+    rainIntensity:0,
+
+    targetRainIntensity:0,
+
+    nextChange:0,
+
+    rainEnd:0,
+
+    clearEnd:0
+
+};
+
+
+/* ============================================================
+   JOGADOR
+============================================================ */
+
+const player = {
+
+    x:0,
+    y:0,
+
+    width:22,
+    height:44,
+
+    vx:0,
+    vy:0,
+
+    speed:4,
+    jump:8.2,
+
+    onGround:true,
+
+    health:100,
+    hunger:100
+
+};
+
+
+/* ============================================================
+   CÂMERA
+============================================================ */
+
+let cameraX = 0;
+
+let cameraY = 0;
+
+
+/* ============================================================
+   CONTROLES
+============================================================ */
+
+const keys = {};
+
+let selectedSlot = 0;
+
+let gamePaused = false;
+
+let gameRunning = false;
+
+let mouseBlock={
+    x:0,
+    y:0,
+    active:false
+};
+
+
+/* ============================================================
+   FÍSICA DA ÁGUA
+============================================================ */
+
+const waterLevels = {};
+
+let lastWaterSimulation = 0;
+
+const WATER_SIMULATION_INTERVAL = 260;
+const WATER_MAX_FLOW_DISTANCE = 4;
+const WATER_SIMULATION_RADIUS = 18;
+const WATER_MAX_MOVES_PER_TICK = 28;
+
+function waterKey(x,y){
+    return `${x},${y}`;
+}
+
+function getWaterLevel(x,y){
+
+    const key=waterKey(x,y);
+
+    if(
+        Object.prototype.hasOwnProperty.call(
+            waterLevels,
+            key
+        )
+    ){
+        return waterLevels[key];
+    }
+
+    return 0;
+}
+
+function setWaterLevel(x,y,level){
+
+    const key=waterKey(x,y);
+
+    if(level<=0){
+        delete waterLevels[key];
+        return;
+    }
+
+    waterLevels[key]=level;
+}
+
+function clearWaterLevel(x,y){
+    delete waterLevels[waterKey(x,y)];
+}
+
+function tryFlowWater(fromX,fromY,toX,toY,newLevel){
+
+    if(
+        Math.abs(toX-playerBlockX())>WATER_SIMULATION_RADIUS ||
+        Math.abs(toY-playerBlockY())>WATER_SIMULATION_RADIUS
+    ){
+        return false;
+    }
+
+    if(getBlock(toX,toY)!=="air"){
+        return false;
+    }
+
+    if(newLevel>WATER_MAX_FLOW_DISTANCE){
+        return false;
+    }
+
+    setBlock(toX,toY,"water");
+    setWaterLevel(toX,toY,newLevel);
+
+    return true;
+}
+
+function playerBlockX(){
+    return Math.floor(
+        (player.x+player.width/2)/TILE_SIZE
+    );
+}
+
+function playerBlockY(){
+    return Math.floor(
+        (player.y+player.height/2)/TILE_SIZE
+    );
+}
+
+function updateWaterPhysics(){
+
+    const now=performance.now();
+
+    if(
+        now-lastWaterSimulation<WATER_SIMULATION_INTERVAL
+    ){
+        return;
+    }
+
+    lastWaterSimulation=now;
+
+    const centerX=playerBlockX();
+    const centerY=playerBlockY();
+
+    const sources=[];
+
+    for(
+        let y=centerY-WATER_SIMULATION_RADIUS;
+        y<=centerY+WATER_SIMULATION_RADIUS;
+        y++
+    ){
+
+        for(
+            let x=centerX-WATER_SIMULATION_RADIUS;
+            x<=centerX+WATER_SIMULATION_RADIUS;
+            x++
+        ){
+
+            if(getBlock(x,y)==="water"){
+
+                sources.push({
+                    x,
+                    y,
+                    level:getWaterLevel(x,y)
+                });
+
+            }
+
+        }
+
+    }
+
+    let moves=0;
+
+    for(const water of sources){
+
+        if(moves>=WATER_MAX_MOVES_PER_TICK)
+            break;
+
+        const belowY=water.y+1;
+
+        if(
+            getBlock(water.x,belowY)==="air"
+        ){
+
+            if(
+                tryFlowWater(
+                    water.x,
+                    water.y,
+                    water.x,
+                    belowY,
+                    Math.min(
+                        WATER_MAX_FLOW_DISTANCE,
+                        water.level+1
+                    )
+                )
+            ){
+                moves++;
+                continue;
+            }
+
+        }
+
+        if(water.level>=WATER_MAX_FLOW_DISTANCE)
+            continue;
+
+        const directions=
+            Math.random()<.5
+            ? [-1,1]
+            : [1,-1];
+
+        for(const dir of directions){
+
+            if(moves>=WATER_MAX_MOVES_PER_TICK)
+                break;
+
+            const tx=water.x+dir;
+            const ty=water.y;
+
+            if(
+                getBlock(tx,ty)==="air" &&
+                getBlock(tx,ty+1)!=="air"
+            ){
+
+                if(
+                    tryFlowWater(
+                        water.x,
+                        water.y,
+                        tx,
+                        ty,
+                        water.level+1
+                    )
+                ){
+                    moves++;
+                }
+
+            }
+
+        }
+
+    }
+
+}
+
+
+/* ============================================================
+   INVENTÁRIO
+============================================================ */
+
+const ALL_INVENTORY_ITEMS = [
+
+    {
+        id:"grass",
+        name:"Grama",
+        icon:"🌱"
+    },
+
+    {
+        id:"dirt",
+        name:"Terra",
+        icon:"🟫"
+    },
+
+    {
+        id:"stone",
+        name:"Pedra",
+        icon:"🪨"
+    },
+
+    {
+        id:"wood",
+        name:"Madeira",
+        icon:"🪵"
+    },
+
+    {
+        id:"leaves",
+        name:"Folhas",
+        icon:"🍃"
+    },
+
+    {
+        id:"sand",
+        name:"Areia",
+        icon:"🟨"
+    },
+
+    {
+        id:"coal",
+        name:"Carvão",
+        icon:"⚫"
+    },
+
+    {
+        id:"iron",
+        name:"Ferro",
+        icon:"🔩"
+    },
+
+    {
+        id:"gold",
+        name:"Ouro",
+        icon:"🟡"
+    }
+
+];
+
+/*
+   A hotbar agora representa somente os itens que o jogador
+   realmente possui. O jogador começa com ela vazia.
+*/
+let hotbar = [];
+
+function resetInventory(){
+
+    hotbar = [];
+
+    selectedSlot = 0;
+
+    updateHotbar();
+
+}
+
+function getInventoryDefinition(id){
+
+    return ALL_INVENTORY_ITEMS.find(
+        item=>item.id===id
+    );
+
+}
+
+
+/* ============================================================
+   BLOCOS
+============================================================ */
+
+const BLOCKS = {
+
+    air:{
+        solid:false,
+        color:"transparent"
+    },
+
+    grass:{
+        solid:true,
+        color:"#58a943"
+    },
+
+    dirt:{
+        solid:true,
+        color:"#8b5a35"
+    },
+
+    stone:{
+        solid:true,
+        color:"#777b80"
+    },
+
+    sand:{
+        solid:true,
+        color:"#d7c078"
+    },
+
+    snow:{
+        solid:true,
+        color:"#e9f3fa"
+    },
+
+    wood:{
+        solid:true,
+        color:"#82552f"
+    },
+
+    leaves:{
+        solid:true,
+        color:"#347b39"
+    },
+
+    coal:{
+        solid:true,
+        color:"#383b40"
+    },
+
+    iron:{
+        solid:true,
+        color:"#b0a99c"
+    },
+
+    gold:{
+        solid:true,
+        color:"#e4bd32"
+    },
+
+    water:{
+        solid:false,
+        color:"#318ed1"
+    },
+
+    cactus:{
+        solid:true,
+        color:"#27873d"
+    },
+
+    mud:{
+        solid:true,
+        color:"#5f4a3a"
+    }
+
+};
+
+
+/* ============================================================
+   BIOMAS
+============================================================ */
+
+const BIOMES = [
+
+    {
+        name:"Planície",
+        surface:"grass",
+        underground:"dirt",
+        tree:true
+    },
+
+    {
+        name:"Floresta",
+        surface:"grass",
+        underground:"dirt",
+        tree:true
+    },
+
+    {
+        name:"Deserto",
+        surface:"sand",
+        underground:"sand",
+        tree:false
+    },
+
+    {
+        name:"Tundra",
+        surface:"snow",
+        underground:"stone",
+        tree:false
+    },
+
+    {
+        name:"Montanhas",
+        surface:"stone",
+        underground:"stone",
+        tree:false
+    },
+
+    {
+        name:"Pântano",
+        surface:"mud",
+        underground:"mud",
+        tree:true
+    },
+
+    {
+        name:"Savana",
+        surface:"grass",
+        underground:"dirt",
+        tree:true
+    },
+
+    {
+        name:"Taiga",
+        surface:"grass",
+        underground:"dirt",
+        tree:true
+    },
+
+    {
+        name:"Praia",
+        surface:"sand",
+        underground:"sand",
+        tree:false
+    },
+
+    {
+        name:"Floresta Sombria",
+        surface:"grass",
+        underground:"dirt",
+        tree:true
+    }
+
+];
+
+
+/* ============================================================
+   UTILITÁRIOS
+============================================================ */
+
+function clamp(value,min,max){
+
+    return Math.max(
+        min,
+        Math.min(max,value)
+    );
+
+}
+
+
+function normalizeUsername(username){
+
+    return username
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g,"")
+        .slice(0,20);
+
+}
+
+
+function usernameToEmail(username){
+
+    return normalizeUsername(username)
+        + "@ludixs.com";
+
+}
+
+
+function randomSeed(){
+
+    return Math.floor(
+        Math.random()*2147483647
+    );
+
+}
+
+
+function hashString(value){
+
+    let hash=2166136261;
+
+    for(
+        let i=0;
+        i<value.length;
+        i++
+    ){
+
+        hash^=value.charCodeAt(i);
+
+        hash+=
+            (hash<<1)+
+            (hash<<4)+
+            (hash<<7)+
+            (hash<<8)+
+            (hash<<24);
+
+    }
+
+    return hash>>>0;
+
+}
+
+
+function seededRandom(x,y=0,extra=0){
+
+    const value =
+        `${worldSeed}:${x}:${y}:${extra}`;
+
+    const h =
+        hashString(value);
+
+    return h/4294967295;
+
+}
+
+
+function smoothstep(t){
+
+    return t*t*(3-2*t);
+
+}
+
+
+function noise1D(x){
+
+    const x0=Math.floor(x);
+
+    const x1=x0+1;
+
+    const t=x-x0;
+
+    const a=
+        seededRandom(
+            x0,
+            0,
+            91
+        );
+
+    const b=
+        seededRandom(
+            x1,
+            0,
+            91
+        );
+
+    const smooth=
+        smoothstep(t);
+
+    return a+(b-a)*smooth;
+
+}
+
+
+/* ============================================================
+   NOVO RUÍDO 2D
+============================================================ */
+
+function noise2D(x,y,extra=0){
+
+    const x0=Math.floor(x);
+    const y0=Math.floor(y);
+
+    const x1=x0+1;
+    const y1=y0+1;
+
+    const tx=smoothstep(x-x0);
+    const ty=smoothstep(y-y0);
+
+    const a=seededRandom(x0,y0,extra);
+    const b=seededRandom(x1,y0,extra);
+    const c=seededRandom(x0,y1,extra);
+    const d=seededRandom(x1,y1,extra);
+
+    const top=
+        a+(b-a)*tx;
+
+    const bottom=
+        c+(d-c)*tx;
+
+    return top+(bottom-top)*ty;
+
+}
+
+
+/* ============================================================
+   RESIZE DO CANVAS
+============================================================ */
+
+function resizeCanvas(){
+
+    const width=
+        Math.max(
+            1,
+            Math.floor(
+                window.innerWidth
+            )
+        );
+
+    const height=
+        Math.max(
+            1,
+            Math.floor(
+                window.innerHeight
+            )
+        );
+
+    /* O jogo usa coordenadas em pixels CSS.
+       Manter o canvas nessa mesma escala evita que
+       o clique do mouse aponte para outro bloco em
+       telas com escala/DPI diferente. */
+    canvas.width=width;
+    canvas.height=height;
+
+    canvas.style.width=
+        width+
+        "px";
+
+    canvas.style.height=
+        height+
+        "px";
+
+    ctx.setTransform(
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+    );
+
+}
+
+
+/* ============================================================
+   RUÍOS E MARES
+============================================================ */
+
+function getRiverStrength(blockX){
+
+    const large=
+        noise1D(
+            blockX/120+
+            500
+        );
+
+    const medium=
+        noise1D(
+            blockX/45+
+            1500
+        );
+
+    const center=
+        Math.abs(
+            large-.5
+        );
+
+    const channel=
+        Math.max(
+            0,
+            1-
+            center/.18
+        );
+
+    return channel*
+        (
+            .65+
+            medium*.35
+        );
+
+}
+
+
+function isRiverAt(blockX){
+
+    return (
+        getRiverStrength(blockX)>
+        .55
+    );
+
+}
+
+
+function getRiverWidth(blockX){
+
+    const strength=
+        getRiverStrength(
+            blockX
+        );
+
+    return 1+
+        Math.floor(
+            strength*2.5
+        );
+
+}
+
+
+function getSeaStrength(blockX){
+
+    const broad=
+        noise1D(
+            blockX/850+
+            1400
+        );
+
+    const coast=
+        noise1D(
+            blockX/180+
+            2100
+        );
+
+    let strength=
+        clamp(
+            (0.25-broad)/
+            .16,
+            0,
+            1
+        );
+
+    strength=
+        strength*.75+
+        clamp(
+            (.55-coast)/
+            .55,
+            0,
+            1
+        )*.25;
+
+    return strength;
+
+}
+
+
+function isSeaAt(blockX){
+
+    return getSeaStrength(
+        blockX
+    )>.58;
+
+}
+
+
+/* ============================================================
+   BIOMA
+============================================================ */
+
+function getBiome(blockX){
+
+    const broad=
+        noise1D(
+            blockX/700
+        );
+
+    const medium=
+        noise1D(
+            blockX/230+
+            100
+        );
+
+    const small=
+        noise1D(
+            blockX/80+
+            300
+        );
+
+    const value=
+        broad*.45+
+        medium*.35+
+        small*.20;
+
+    if(value<.10)
+        return BIOMES[2];
+
+    if(value<.19)
+        return BIOMES[5];
+
+    if(value<.28)
+        return BIOMES[8];
+
+    if(value<.38)
+        return BIOMES[6];
+
+    if(value<.49)
+        return BIOMES[1];
+
+    if(value<.59)
+        return BIOMES[7];
+
+    if(value<.69)
+        return BIOMES[9];
+
+    if(value<.79)
+        return BIOMES[0];
+
+    if(value<.90)
+        return BIOMES[3];
+
+    return BIOMES[4];
+
+}
+
+
+/* ============================================================
+   TERRENO AVANÇADO
+============================================================ */
+
+function getSurfaceBlockY(blockX){
+
+    const biome=
+        getBiome(
+            blockX
+        );
+
+    const continental=
+        noise1D(
+            blockX/260+
+            20
+        );
+
+    const largeWave=
+        Math.sin(
+            blockX/105
+        )*3.5;
+
+    const mediumWave=
+        Math.sin(
+            blockX/43+
+            1.7
+        )*2.2;
+
+    const smallWave=
+        Math.sin(
+            blockX/17
+        )*1.1;
+
+    const terrainNoise=
+        (
+            noise1D(
+                blockX/18+
+                400
+            )-.5
+        )*5;
+
+    let height=
+        12+
+        largeWave+
+        mediumWave+
+        smallWave+
+        terrainNoise;
+
+
+    if(
+        biome.name==="Montanhas"
+    ){
+
+        const mountainLarge=
+            noise1D(
+                blockX/90+
+                700
+            );
+
+        const mountainSmall=
+            noise1D(
+                blockX/22+
+                800
+            );
+
+        const ridge=
+            Math.abs(
+                mountainLarge-.5
+            )*2;
+
+        height+=
+            10+
+            mountainLarge*13+
+            ridge*9+
+            mountainSmall*5;
+
+        if(
+            noise1D(
+                blockX/12+
+                900
+            )>.72
+        ){
+
+            height+=7;
+
+        }
+
+    }
+
+
+    if(
+        biome.name==="Deserto"
+    ){
+
+        height+=
+            noise1D(
+                blockX/32+
+                1000
+            )*4;
+
+        height+=
+            Math.sin(
+                blockX/52
+            )*2.5;
+
+    }
+
+
+    if(
+        biome.name==="Tundra"
+    ){
+
+        height+=
+            noise1D(
+                blockX/45+
+                1100
+            )*5;
+
+        height+=
+            Math.sin(
+                blockX/70
+            )*3;
+
+    }
+
+
+    if(
+        biome.name==="Floresta"
+    ){
+
+        height+=
+            noise1D(
+                blockX/55+
+                1200
+            )*3;
+
+    }
+
+
+    if(
+        biome.name==="Floresta Sombria"
+    ){
+
+        height+=
+            noise1D(
+                blockX/48+
+                1300
+            )*5;
+
+        height+=
+            Math.sin(
+                blockX/34
+            )*2;
+
+    }
+
+
+    if(
+        biome.name==="Taiga"
+    ){
+
+        height+=
+            noise1D(
+                blockX/60+
+                1400
+            )*4;
+
+    }
+
+
+    if(
+        biome.name==="Savana"
+    ){
+
+        height+=
+            noise1D(
+                blockX/75+
+                1500
+            )*2.5;
+
+    }
+
+
+    if(
+        biome.name==="Pântano"
+    ){
+
+        height=
+            14+
+            (
+                noise1D(
+                    blockX/28+
+                    1600
+                )-.5
+            )*3;
+
+    }
+
+
+    if(
+        biome.name==="Praia"
+    ){
+
+        height=
+            12+
+            (
+                noise1D(
+                    blockX/42+
+                    1700
+                )-.5
+            )*3;
+
+    }
+
+
+    /*
+       CONTINENTES
+
+       Em regiões muito próximas do mar,
+       o terreno vai descendo gradualmente.
+    */
+
+    const seaStrength=
+        getSeaStrength(
+            blockX
+        );
+
+    if(
+        seaStrength>.35 &&
+        biome.name!=="Montanhas"
+    ){
+
+        const coastDrop=
+            seaStrength*
+            7;
+
+        height-=
+            coastDrop;
+
+    }
+
+
+    /*
+       RIO
+
+       O rio corta o terreno e cria margens
+       mais suaves.
+    */
+
+    const riverStrength=
+        getRiverStrength(
+            blockX
+        );
+
+    if(
+        riverStrength>.30
+    ){
+
+        height-=
+            riverStrength*
+            5;
+
+    }
+
+
+    /*
+       LIMITES PARA EVITAR PONTOS EXTREMOS
+    */
+
+    if(
+        biome.name!=="Montanhas"
+    ){
+
+        height=
+            clamp(
+                height,
+                7,
+                23
+            );
+
+    }else{
+
+        height=
+            clamp(
+                height,
+                12,
+                48
+            );
+
+    }
+
+
+    return Math.floor(
+        height
+    );
+
+}
+
+
+function getSurfacePixelY(worldX){
+
+    const blockX=
+        Math.floor(
+            worldX/TILE_SIZE
+        );
+
+    return getSurfaceBlockY(
+        blockX
+    )*
+    TILE_SIZE;
+
+}
+
+
+/* ============================================================
+   CAVERNAS MAIS NATURAIS
+============================================================ */
+
+function caveNoise(blockX,blockY){
+
+    const large=
+        noise2D(
+            blockX/8,
+            blockY/8,
+            812
+        );
+
+    const medium=
+        noise2D(
+            blockX/4,
+            blockY/4,
+            813
+        );
+
+    const small=
+        noise2D(
+            blockX/2,
+            blockY/2,
+            814
+        );
+
+    return (
+        large*.50+
+        medium*.32+
+        small*.18
+    );
+
+}
+
+
+function caveTunnelNoise(
+    blockX,
+    blockY
+){
+
+    const horizontal=
+        noise2D(
+            blockX/11,
+            blockY/3.5,
+            820
+        );
+
+    const vertical=
+        noise2D(
+            blockX/3.5,
+            blockY/11,
+            821
+        );
+
+    return (
+        horizontal*.62+
+        vertical*.38
+    );
+
+}
+
+
+function isCaveAt(
+    blockX,
+    blockY,
+    surface
+){
+
+    const depth=
+        blockY-
+        surface;
+
+    if(depth<6)
+        return false;
+
+    if(depth>42)
+        return false;
+
+
+    /*
+       Mantém uma camada de segurança
+       abaixo da superfície.
+    */
+
+    const base=
+        caveNoise(
+            blockX,
+            blockY
+        );
+
+    const tunnels=
+        caveTunnelNoise(
+            blockX,
+            blockY
+        );
+
+
+    let threshold=
+        .80;
+
+
+    /*
+       Cavernas maiores no meio da terra.
+    */
+
+    if(
+        depth>=10 &&
+        depth<=28
+    ){
+
+        threshold=.73;
+
+    }
+
+
+    /*
+       Túneis estreitos em outras regiões.
+    */
+
+    if(
+        tunnels>.84 &&
+        depth>=7
+    ){
+
+        return true;
+
+    }
+
+
+    if(
+        base>threshold
+    ){
+
+        /*
+           Pequenas câmaras extras.
+        */
+
+        if(
+            seededRandom(
+                blockX,
+                blockY,
+                830
+            )>.18
+        ){
+
+            return true;
+
+        }
+
+    }
+
+
+    return false;
+
+}
+
+
+/* ============================================================
+   CHUNKS
+============================================================ */
+
+function getChunkX(worldX){
+
+    const blockX=
+        Math.floor(
+            worldX/TILE_SIZE
+        );
+
+    return Math.floor(
+        blockX/CHUNK_SIZE
+    );
+
+}
+
+
+function getChunkY(worldY){
+
+    const blockY=
+        Math.floor(
+            worldY/TILE_SIZE
+        );
+
+    return Math.floor(
+        blockY/CHUNK_SIZE
+    );
+
+}
+
+
+function getChunkKey(chunkX,chunkY){
+
+    return `${chunkX},${chunkY}`;
+
+}
+
+
+function getBlockChunk(
+    blockX,
+    blockY
+){
+
+    return getChunkKey(
+        Math.floor(
+            blockX/CHUNK_SIZE
+        ),
+        Math.floor(
+            blockY/CHUNK_SIZE
+        )
+    );
+
+}
+
+
+/* ============================================================
+   ÁRVORES
+============================================================ */
+
+function hasTreeAt(blockX){
+
+    const biome=
+        getBiome(
+            blockX
+        );
+
+    if(!biome.tree)
+        return false;
+
+
+    if(
+        isRiverAt(blockX) ||
+        isSeaAt(blockX)
+    ){
+
+        return false;
+
+    }
+
+
+    const surface=
+        getSurfaceBlockY(
+            blockX
+        );
+
+
+    /*
+       Evita árvores em terrenos
+       muito inclinados.
+    */
+
+    const left=
+        getSurfaceBlockY(
+            blockX-1
+        );
+
+    const right=
+        getSurfaceBlockY(
+            blockX+1
+        );
+
+
+    if(
+        Math.abs(
+            left-right
+        )>2
+    ){
+
+        return false;
+
+    }
+
+
+    let chance=.86;
+
+
+    if(
+        biome.name==="Floresta"
+    ){
+
+        chance=.72;
+
+    }
+
+
+    if(
+        biome.name==="Floresta Sombria"
+    ){
+
+        chance=.66;
+
+    }
+
+
+    if(
+        biome.name==="Taiga"
+    ){
+
+        chance=.75;
+
+    }
+
+
+    if(
+        biome.name==="Pântano"
+    ){
+
+        chance=.80;
+
+    }
+
+
+    if(
+        biome.name==="Savana"
+    ){
+
+        chance=.88;
+
+    }
+
+
+    return seededRandom(
+        blockX,
+        surface,
+        333
+    )>chance;
+
+}
+
+
+function getTreeHeight(blockX){
+
+    const biome=
+        getBiome(
+            blockX
+        );
+
+    let minimum=3;
+
+    let extra=3;
+
+
+    if(
+        biome.name==="Floresta"
+    ){
+
+        minimum=4;
+        extra=4;
+
+    }
+
+
+    if(
+        biome.name==="Taiga"
+    ){
+
+        minimum=5;
+        extra=5;
+
+    }
+
+
+    if(
+        biome.name==="Floresta Sombria"
+    ){
+
+        minimum=5;
+        extra=6;
+
+    }
+
+
+    if(
+        biome.name==="Pântano"
+    ){
+
+        minimum=3;
+        extra=3;
+
+    }
+
+
+    if(
+        biome.name==="Savana"
+    ){
+
+        minimum=4;
+        extra=3;
+
+    }
+
+
+    return minimum+
+        Math.floor(
+            seededRandom(
+                blockX,
+                0,
+                444
+            )*
+            extra
+        );
+
+}
+
+
+function hasCactusAt(blockX){
+
+    const biome=
+        getBiome(
+            blockX
+        );
+
+    if(
+        biome.name!=="Deserto"
+    ){
+
+        return false;
+
+    }
+
+
+    return seededRandom(
+        blockX,
+        getSurfaceBlockY(
+            blockX
+        ),
+        555
+    )>.86;
+
+}
+
+
+function getCactusHeight(blockX){
+
+    return 1+
+        Math.floor(
+            seededRandom(
+                blockX,
+                0,
+                556
+            )*4
+        );
+
+}
+
+
+/* ============================================================
+   VEGETAÇÃO ESPECIAL
+============================================================ */
+
+function hasGrassDetailAt(
+    blockX
+){
+
+    const biome=
+        getBiome(
+            blockX
+        );
+
+    if(
+        biome.name!=="Planície" &&
+        biome.name!=="Savana" &&
+        biome.name!=="Floresta"
+    ){
+
+        return false;
+
+    }
+
+
+    if(
+        hasTreeAt(blockX)
+    ){
+
+        return false;
+
+    }
+
+
+    if(
+        isRiverAt(blockX) ||
+        isSeaAt(blockX)
+    ){
+
+        return false;
+
+    }
+
+
+    return seededRandom(
+        blockX,
+        getSurfaceBlockY(blockX),
+        600
+    )>.68;
+
+}
+
+
+function hasFlowerAt(blockX){
+
+    const biome=
+        getBiome(
+            blockX
+        );
+
+    if(
+        biome.name!=="Planície" &&
+        biome.name!=="Floresta"
+    ){
+
+        return false;
+
+    }
+
+
+    if(
+        isRiverAt(blockX) ||
+        isSeaAt(blockX)
+    ){
+
+        return false;
+
+    }
+
+
+    return seededRandom(
+        blockX,
+        getSurfaceBlockY(blockX),
+        601
+    )>.90;
+
+}
+
+
+function hasMushroomAt(blockX){
+
+    const biome=
+        getBiome(
+            blockX
+        );
+
+    if(
+        biome.name!=="Floresta Sombria" &&
+        biome.name!=="Pântano"
+    ){
+
+        return false;
+
+    }
+
+
+    return seededRandom(
+        blockX,
+        getSurfaceBlockY(blockX),
+        602
+    )>.82;
+
+}
+
+
+/* ============================================================
+   GERAÇÃO DE BLOCOS
+============================================================ */
+
+function generateBlock(
+    blockX,
+    blockY
+){
+
+    if(
+        blockX<-WORLD_LIMIT ||
+        blockX>WORLD_LIMIT ||
+        blockY<-100 ||
+        blockY>180
+    ){
+
+        return "air";
+
+    }
+
+
+    const biome=
+        getBiome(
+            blockX
+        );
+
+
+    const surface=
+        getSurfaceBlockY(
+            blockX
+        );
+
+
+    const sea=
+        isSeaAt(
+            blockX
+        );
+
+
+    const river=
+        isRiverAt(
+            blockX
+        );
+
+
+    const riverStrength=
+        getRiverStrength(
+            blockX
+        );
+
+
+    /*
+       ÁGUA DO MAR
+
+       O nível da água é fixo e o terreno
+       fica abaixo dele nas áreas profundas.
+    */
+
+    if(
+        sea &&
+        biome.name!=="Montanhas" &&
+        blockY>=SEA_LEVEL &&
+        blockY<surface
+    ){
+
+        return "water";
+
+    }
+
+
+    /*
+       ÁGUA DOS RIOS
+    */
+
+    if(
+        river &&
+        riverStrength>.55 &&
+        blockY>=SEA_LEVEL &&
+        blockY<surface
+    ){
+
+        return "water";
+
+    }
+
+
+    /*
+       PÂNTANO
+
+       Algumas áreas baixas ficam alagadas.
+    */
+
+    if(
+        biome.name==="Pântano" &&
+        blockY>=SEA_LEVEL &&
+        blockY<surface &&
+        noise1D(
+            blockX/18+
+            3000
+        )>.42
+    ){
+
+        return "water";
+
+    }
+
+
+    if(
+        blockY<surface
+    ){
+
+        return "air";
+
+    }
+
+
+    /*
+       CAVERNAS
+    */
+
+    if(
+        isCaveAt(
+            blockX,
+            blockY,
+            surface
+        )
+    ){
+
+        return "air";
+
+    }
+
+
+    const depth=
+        blockY-
+        surface;
+
+
+    /*
+       CAMADA SUPERFICIAL
+    */
+
+    if(depth===0){
+
+        /*
+           Margem de rio com areia.
+        */
+
+        if(
+            river &&
+            riverStrength>.35 &&
+            biome.name!=="Montanhas"
+        ){
+
+            return "sand";
+
+        }
+
+
+        /*
+           Costa de praia.
+        */
+
+        if(
+            sea &&
+            biome.name!=="Montanhas"
+        ){
+
+            return "sand";
+
+        }
+
+
+        return biome.surface;
+
+    }
+
+
+    /*
+       CAMADA DE SUBSOLO
+    */
+
+    if(
+        depth<=3
+    ){
+
+        /*
+           Montanhas ficam rochosas.
+        */
+
+        if(
+            biome.name==="Montanhas"
+        ){
+
+            return "stone";
+
+        }
+
+
+        /*
+           Praia/deserto continuam com areia.
+        */
+
+        if(
+            biome.name==="Deserto" ||
+            biome.name==="Praia"
+        ){
+
+            return "sand";
+
+        }
+
+
+        return biome.underground;
+
+    }
+
+
+    /*
+       PEDRA
+    */
+
+    /*
+       Minérios agora dependem também
+       da profundidade real.
+    */
+
+    const ore=
+        seededRandom(
+            blockX,
+            blockY,
+            700
+        );
+
+
+    /*
+       OURO:
+       muito raro e mais profundo.
+    */
+
+    if(
+        depth>=24 &&
+        ore>.9972
+    ){
+
+        return "gold";
+
+    }
+
+
+    /*
+       FERRO:
+       comum em profundidade média.
+    */
+
+    if(
+        depth>=10 &&
+        ore>.989
+    ){
+
+        return "iron";
+
+    }
+
+
+    /*
+       CARVÃO:
+       aparece mais próximo da superfície,
+       mas também em cavernas.
+    */
+
+    if(
+        depth>=5 &&
+        ore>.955
+    ){
+
+        return "coal";
+
+    }
+
+
+    /*
+       Pequena chance extra de ferro
+       em regiões muito profundas.
+    */
+
+    if(
+        depth>=32 &&
+        seededRandom(
+            blockX,
+            blockY,
+            701
+        )>.996
+    ){
+
+        return "iron";
+
+    }
+
+
+    return "stone";
+
+}
+
+
+/* ============================================================
+   BLOCOS MODIFICADOS
+============================================================ */
+
+function blockKey(
+    blockX,
+    blockY
+){
+
+    return `${blockX},${blockY}`;
+
+}
+
+
+function getBlock(
+    blockX,
+    blockY
+){
+
+    const chunk=
+        getBlockChunk(
+            blockX,
+            blockY
+        );
+
+
+    if(
+        modifiedBlocks[chunk] &&
+        Object.prototype.hasOwnProperty.call(
+            modifiedBlocks[chunk],
+            blockKey(
+                blockX,
+                blockY
+            )
+        )
+    ){
+
+        return modifiedBlocks[chunk][
+            blockKey(
+                blockX,
+                blockY
+            )
+        ];
+
+    }
+
+
+    return generateBlock(
+        blockX,
+        blockY
+    );
+
+}
+
+
+function setBlock(
+    blockX,
+    blockY,
+    type
+){
+
+    const chunk=
+        getBlockChunk(
+            blockX,
+            blockY
+        );
+
+
+    if(
+        !modifiedBlocks[chunk]
+    ){
+
+        modifiedBlocks[chunk]={};
+
+    }
+
+
+    modifiedBlocks[chunk][
+        blockKey(
+            blockX,
+            blockY
+        )
+    ]=type;
+
+    if(type!=="water"){
+        clearWaterLevel(
+            blockX,
+            blockY
+        );
+    }else if(!Object.prototype.hasOwnProperty.call(
+        waterLevels,
+        waterKey(blockX,blockY)
+    )){
+        setWaterLevel(
+            blockX,
+            blockY,
+            1
+        );
+    }
+
+
+    exploredChunks[chunk]=true;
+
+}
+
+
+/* ============================================================
+   COLISÃO
+============================================================ */
+
+function isSolidAt(
+    blockX,
+    blockY
+){
+
+    const block=
+        getBlock(
+            blockX,
+            blockY
+        );
+
+    return BLOCKS[block]?.solid===true;
+
+}
+
+
+function collidesAt(
+    x,
+    y
+){
+
+    const left=
+        Math.floor(
+            x/TILE_SIZE
+        );
+
+    const right=
+        Math.floor(
+            (x+
+            player.width-1)/
+            TILE_SIZE
+        );
+
+    const top=
+        Math.floor(
+            y/TILE_SIZE
+        );
+
+    const bottom=
+        Math.floor(
+            (y+
+            player.height-1)/
+            TILE_SIZE
+        );
+
+
+    for(
+        let bx=left;
+        bx<=right;
+        bx++
+    ){
+
+        for(
+            let by=top;
+            by<=bottom;
+            by++
+        ){
+
+            if(
+                isSolidAt(
+                    bx,
+                    by
+                )
+            ){
+
+                return true;
+
+            }
+
+        }
+
+    }
+
+
+    return false;
+
+}
+
+
+/* ============================================================
+   CHÃO
+============================================================ */
+
+function getGroundY(){
+
+    const centerX=
+        player.x+
+        player.width/2;
+
+
+    const blockX=
+        Math.floor(
+            centerX/
+            TILE_SIZE
+        );
+
+
+    const surface=
+        getSurfaceBlockY(
+            blockX
+        );
+
+
+    return (
+        surface*
+        TILE_SIZE-
+        player.height
+    );
+
+}
+
+
+function placePlayerAtSpawn(){
+
+    const surface=
+        getSurfaceBlockY(
+            0
+        );
+
+
+    player.x=0;
+
+    player.y=
+        surface*
+        TILE_SIZE-
+        player.height;
+
+    player.vx=0;
+
+    player.vy=0;
+
+    player.onGround=true;
+
+    keys[" "]=false;
+
+    keys["space"]=false;
+
+}
+
+
+function snapPlayerToGround(){
+
+    const groundY=
+        getGroundY();
+
+
+    if(
+        player.y>=groundY-2 &&
+        player.y<=groundY+6 &&
+        player.vy>=0
+    ){
+
+        player.y=
+            groundY;
+
+        player.vy=0;
+
+        player.onGround=true;
+
+        return true;
+
+    }
+
+
+    return false;
+
+}
+
+
+/* ============================================================
+   MOVIMENTO
+============================================================ */
+
+function updatePlayer(){
+
+    if(gamePaused)
+        return;
+
+
+    let direction=0;
+
+
+    if(
+        keys["a"] ||
+        keys["arrowleft"]
+    ){
+
+        direction--;
+
+    }
+
+
+    if(
+        keys["d"] ||
+        keys["arrowright"]
+    ){
+
+        direction++;
+
+    }
+
+
+    const targetSpeed=
+        direction*
+        player.speed;
+
+
+    player.vx+=
+        (
+            targetSpeed-
+            player.vx
+        )*.18;
+
+
+    if(
+        Math.abs(
+            player.vx
+        )<.02
+    ){
+
+        player.vx=0;
+
+    }
+
+
+    const nextX=
+        player.x+
+        player.vx;
+
+
+    if(
+        !collidesAt(
+            nextX,
+            player.y
+        )
+    ){
+
+        player.x=
+            nextX;
+
+    }else{
+
+        player.vx=0;
+
+    }
+
+
+    player.x=
+        clamp(
+            player.x,
+            -WORLD_LIMIT*
+            TILE_SIZE,
+            WORLD_LIMIT*
+            TILE_SIZE
+        );
+
+
+    if(
+        (
+            keys[" "] ||
+            keys["space"]
+        ) &&
+        player.onGround
+    ){
+
+        player.vy=
+            -player.jump;
+
+        player.onGround=false;
+
+        keys[" "]=false;
+        keys["space"]=false;
+
+    }
+
+
+    player.vy+=.55;
+
+
+    if(
+        player.vy>15
+    ){
+
+        player.vy=15;
+
+    }
+
+
+    const nextY=
+        player.y+
+        player.vy;
+
+
+    if(
+        player.vy<0
+    ){
+
+        if(
+            !collidesAt(
+                player.x,
+                nextY
+            )
+        ){
+
+            player.y=
+                nextY;
+
+            player.onGround=false;
+
+        }else{
+
+            player.vy=0;
+
+        }
+
+    }else{
+
+        const groundY=
+            getGroundY();
+
+
+        if(
+            nextY>=groundY
+        ){
+
+            player.y=
+                groundY;
+
+            player.vy=0;
+
+            player.onGround=true;
+
+        }else if(
+            !collidesAt(
+                player.x,
+                nextY
+            )
+        ){
+
+            player.y=
+                nextY;
+
+            player.onGround=false;
+
+        }else{
+
+            const bottomBlock=
+                Math.floor(
+                    (
+                        player.y+
+                        player.height+
+                        player.vy
+                    )/
+                    TILE_SIZE
+                );
+
+
+            player.y=
+                bottomBlock*
+                TILE_SIZE-
+                player.height;
+
+            player.vy=0;
+
+            player.onGround=true;
+
+        }
+
+    }
+
+
+    player.hunger-=.001;
+
+    player.hunger=
+        clamp(
+            player.hunger,
+            0,
+            100
+        );
+
+
+    if(
+        player.hunger<=0
+    ){
+
+        player.health-=.01;
+
+        player.health=
+            clamp(
+                player.health,
+                0,
+                100
+            );
+
+    }
+
+
+    markCurrentChunkExplored();
+
+}
+
+
+/* ============================================================
+   CHUNK ATUAL
+============================================================ */
+
+function markCurrentChunkExplored(){
+
+    const cx=
+        getChunkX(
+            player.x
+        );
+
+    const cy=
+        getChunkY(
+            player.y
+        );
+
+
+    exploredChunks[
+        getChunkKey(
+            cx,
+            cy
+        )
+    ]=true;
+
+}
+
+
+/* ============================================================
+   ALCANCE
+============================================================ */
+
+function canReachBlock(
+    blockX,
+    blockY
+){
+
+    const px=
+        player.x/
+        TILE_SIZE;
+
+    const py=
+        player.y/
+        TILE_SIZE;
+
+    const bx=
+        blockX+.5;
+
+    const by=
+        blockY+.5;
+
+
+    const dx=
+        bx-px;
+
+    const dy=
+        by-py;
+
+
+    return Math.sqrt(
+        dx*dx+
+        dy*dy
+    )<=6;
+
+}
+
+
+/* ============================================================
+   VISÃO
+============================================================ */
+
+function hasLineOfSight(
+    startX,
+    startY,
+    endX,
+    endY
+){
+
+    const dx=
+        endX-startX;
+
+    const dy=
+        endY-startY;
+
+
+    const distance=
+        Math.sqrt(
+            dx*dx+
+            dy*dy
+        );
+
+
+    const steps=
+        Math.ceil(
+            distance*4
+        );
+
+
+    for(
+        let i=1;
+        i<steps;
+        i++
+    ){
+
+        const t=
+            i/steps;
+
+
+        const x=
+            startX+
+            dx*t;
+
+        const y=
+            startY+
+            dy*t;
+
+
+        const bx=
+            Math.floor(x);
+
+        const by=
+            Math.floor(y);
+
+
+        if(
+            isSolidAt(
+                bx,
+                by
+            )
+        ){
+
+            return false;
+
+        }
+
+    }
+
+
+    return true;
+
+}
+
+
+/* ============================================================
+   MOUSE
+============================================================ */
+
+function screenToBlock(
+    mouseX,
+    mouseY
+){
+
+    return {
+
+        x:Math.floor(
+            (
+                mouseX+
+                cameraX
+            )/
+            TILE_SIZE
+        ),
+
+        y:Math.floor(
+            (
+                mouseY+
+                cameraY
+            )/
+            TILE_SIZE
+        )
+
+    };
+
+}
+
+
+/* ============================================================
+   QUEBRAR / COLOCAR
+============================================================ */
+
+function handleCanvasClick(
+    event
+){
+
+    if(gamePaused)
+        return;
+
+
+    const rect=
+        canvas.getBoundingClientRect();
+
+
+    const mouseX=
+        event.clientX-
+        rect.left;
+
+    const mouseY=
+        event.clientY-
+        rect.top;
+
+
+    const target=
+        screenToBlock(
+            mouseX,
+            mouseY
+        );
+
+
+    if(
+        !canReachBlock(
+            target.x,
+            target.y
+        )
+    ){
+
+        return;
+
+    }
+
+
+    const playerCenterX=
+        (
+            player.x+
+            player.width/2
+        )/
+        TILE_SIZE;
+
+
+    const playerCenterY=
+        (
+            player.y+
+            player.height/2
+        )/
+        TILE_SIZE;
+
+
+    if(
+        !hasLineOfSight(
+            playerCenterX,
+            playerCenterY,
+            target.x+.5,
+            target.y+.5
+        )
+    ){
+
+        return;
+
+    }
+
+
+    const current=
+        getBlock(
+            target.x,
+            target.y
+        );
+
+
+    if(
+        current!=="air" &&
+        current!=="water"
+    ){
+
+        setBlock(
+            target.x,
+            target.y,
+            "air"
+        );
+
+        clearWaterLevel(
+            target.x,
+            target.y
+        );
+
+
+        addItem(
+            current,
+            1
+        );
+
+        /* A alteração fica registrada no chunk e será
+           persistida pelo autosave. */
+        markCurrentChunkExplored();
+
+    }else{
+
+        const item=
+            hotbar[
+                selectedSlot
+            ];
+
+
+        if(
+            !item ||
+            item.count<=0
+        ){
+
+            return;
+
+        }
+
+
+        if(
+            !BLOCKS[item.id] ||
+            !BLOCKS[item.id].solid
+        ){
+
+            return;
+
+        }
+
+
+        const blockPX=
+            target.x*
+            TILE_SIZE;
+
+        const blockPY=
+            target.y*
+            TILE_SIZE;
+
+
+        const overlaps=
+            !(
+                blockPX+
+                TILE_SIZE<=
+                player.x ||
+
+                blockPX>=
+                player.x+
+                player.width ||
+
+                blockPY+
+                TILE_SIZE<=
+                player.y ||
+
+                blockPY>=
+                player.y+
+                player.height
+            );
+
+
+        if(overlaps)
+            return;
+
+
+        setBlock(
+            target.x,
+            target.y,
+            item.id
+        );
+
+
+        item.count--;
+
+        updateHotbar();
+
+    }
+
+}
+
+
+/* ============================================================
+   INVENTÁRIO
+============================================================ */
+
+function addItem(
+    id,
+    count
+){
+
+    if(!Number.isFinite(count) || count<=0)
+        return;
+
+    let slot=
+        hotbar.find(
+            item=>item.id===id
+        );
+
+    if(!slot){
+
+        const definition=
+            getInventoryDefinition(id);
+
+        if(!definition)
+            return;
+
+        slot={
+            id:definition.id,
+            name:definition.name,
+            icon:definition.icon,
+            count:0
+        };
+
+        hotbar.push(slot);
+
+    }
+
+    slot.count+=Math.floor(count);
+
+    updateHotbar();
+
+}
+
+
+function updateHotbar(){
+
+    /* Remove qualquer item vazio para que a interface mostre
+       somente aquilo que foi realmente coletado. */
+    hotbar=hotbar.filter(
+        item=>
+            Number(item.count)>0
+    );
+
+    if(hotbar.length===0){
+        selectedSlot=0;
+    }else if(selectedSlot>=hotbar.length){
+        selectedSlot=hotbar.length-1;
+    }
+
+    const element=
+        document.getElementById(
+            "hotbar"
+        );
+
+    element.innerHTML="";
+
+    hotbar.forEach(
+        (item,index)=>{
+
+            const slot=
+                document.createElement(
+                    "div"
+                );
+
+            slot.className=
+                "hot-slot"+
+                (
+                    index===selectedSlot
+                    ?
+                    " selected"
+                    :
+                    ""
+                );
+
+            slot.innerHTML=`
+
+                <span class="slot-number">
+                    ${index+1}
+                </span>
+
+                <span>
+                    ${item.icon}
+                </span>
+
+                <span class="slot-count">
+                    ${item.count}
+                </span>
+
+            `;
+
+            slot.addEventListener(
+                "click",
+                ()=>{
+
+                    selectedSlot=index;
+
+                    updateHotbar();
+
+                }
+            );
+
+            element.appendChild(
+                slot
+            );
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   CLIMA — INICIALIZAÇÃO
+============================================================ */
+
+function initializeWeather(){
+
+    const now=
+        performance.now();
+
+
+    weather.raining=false;
+
+    weather.cloudCover=0;
+
+    weather.targetCloudCover=0;
+
+    weather.rainIntensity=0;
+
+    weather.targetRainIntensity=0;
+
+    /* Primeira chuva só pode chegar depois de um período
+       relativamente longo e imprevisível. */
+    weather.nextChange=
+        now+
+        60000+
+        Math.random()*
+        120000;
+
+    weather.rainEnd=0;
+
+    weather.clearEnd=0;
+
+}
+
+
+/* ============================================================
+   CLIMA — ATUALIZAÇÃO
+============================================================ */
+
+function updateWeather(){
+
+    const now=
+        performance.now();
+
+
+    if(
+        now>=weather.nextChange
+    ){
+
+        if(!weather.raining){
+
+            weather.raining=true;
+
+            weather.targetCloudCover=1;
+
+            weather.targetRainIntensity=
+                .75+
+                Math.random()*
+                .25;
+
+            weather.rainEnd=
+                now+
+                60000+
+                Math.random()*
+                90000;
+
+        }else{
+
+            weather.raining=false;
+
+            weather.targetCloudCover=0;
+
+            weather.targetRainIntensity=0;
+
+            weather.clearEnd=
+                now+
+                45000+
+                Math.random()*
+                75000;
+
+        }
+
+
+        weather.nextChange=
+            weather.raining
+            ?
+            weather.rainEnd
+            :
+            weather.clearEnd;
+
+    }
+
+
+    if(
+        weather.raining &&
+        now>=weather.rainEnd
+    ){
+
+        weather.raining=false;
+
+        weather.targetCloudCover=0;
+
+        weather.targetRainIntensity=0;
+
+        weather.nextChange=
+            now+
+            45000+
+            Math.random()*
+            75000;
+
+    }
+
+
+    weather.cloudCover+=
+        (
+            weather.targetCloudCover-
+            weather.cloudCover
+        )*.008;
+
+
+    weather.rainIntensity+=
+        (
+            weather.targetRainIntensity-
+            weather.rainIntensity
+        )*.02;
+
+
+    weather.cloudCover=
+        clamp(
+            weather.cloudCover,
+            0,
+            1
+        );
+
+
+    weather.rainIntensity=
+        clamp(
+            weather.rainIntensity,
+            0,
+            1
+        );
+
+}
+
+
+/* ============================================================
+   CÉU
+============================================================ */
+
+function drawSky(){
+
+    const now=
+        performance.now();
+
+    const dayDuration=
+        15*60*1000;
+
+    const cycle=
+        (
+            now%
+            (dayDuration*2)
+        )/
+        (dayDuration*2);
+
+    const daylight=
+        Math.sin(
+            cycle*Math.PI*2
+        )*.5+.5;
+
+
+    let r=
+        12+
+        daylight*92;
+
+    let g=
+        22+
+        daylight*130;
+
+    let b=
+        42+
+        daylight*178;
+
+
+    const rainDark=
+        weather.cloudCover*48;
+
+    r-=rainDark*.75;
+    g-=rainDark*.82;
+    b-=rainDark*.90;
+
+
+    r=clamp(Math.floor(r),5,255);
+    g=clamp(Math.floor(g),7,255);
+    b=clamp(Math.floor(b),12,255);
+
+
+    const gradient=
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            window.innerHeight
+        );
+
+    gradient.addColorStop(
+        0,
+        `rgb(${r},${g},${b})`
+    );
+
+    gradient.addColorStop(
+        .62,
+        `rgb(${clamp(r+18,0,255)},${clamp(g+12,0,255)},${clamp(b+5,0,255)})`
+    );
+
+    gradient.addColorStop(
+        1,
+        `rgb(${clamp(r*.58,0,255)},${clamp(g*.58,0,255)},${clamp(b*.55,0,255)})`
+    );
+
+    ctx.fillStyle=gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        window.innerWidth,
+        window.innerHeight
+    );
+
+
+    /* Sol */
+    const sunAngle=
+        cycle*Math.PI*2;
+
+    const sunX=
+        window.innerWidth*.5+
+        Math.cos(sunAngle-Math.PI/2)*
+        window.innerWidth*.42;
+
+    const sunY=
+        window.innerHeight*.62-
+        Math.sin(sunAngle-Math.PI/2)*
+        window.innerHeight*.48;
+
+    if(daylight>.08){
+
+        ctx.save();
+
+        ctx.globalAlpha=
+            clamp(
+                daylight*1.25,
+                0,
+                1
+            );
+
+        ctx.shadowColor=
+            "rgba(255,220,110,.65)";
+
+        ctx.shadowBlur=35;
+
+        ctx.fillStyle="#ffe58a";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            sunX,
+            sunY,
+            28+
+            daylight*12,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+
+    }
+
+
+    /* Lua */
+    const moonX=
+        window.innerWidth*.5+
+        Math.cos(sunAngle+Math.PI-Math.PI/2)*
+        window.innerWidth*.42;
+
+    const moonY=
+        window.innerHeight*.62-
+        Math.sin(sunAngle+Math.PI-Math.PI/2)*
+        window.innerHeight*.48;
+
+    if(daylight<.55){
+
+        ctx.save();
+
+        ctx.globalAlpha=
+            clamp(
+                (0.55-daylight)*2,
+                0,
+                .9
+            );
+
+        ctx.fillStyle="#e8f1ff";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            moonX,
+            moonY,
+            21,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle=
+            `rgba(90,105,135,.35)`;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            moonX+7,
+            moonY-4,
+            17,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+
+    }
+
+
+    if(weather.cloudCover>.35){
+
+        ctx.fillStyle=
+            `rgba(20,28,38,${weather.cloudCover*.20})`;
+
+        ctx.fillRect(
+            0,
+            0,
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
+
+}
+function drawCloudShape(
+    x,
+    y,
+    scale,
+    color,
+    alpha
+){
+
+    ctx.save();
+
+    ctx.globalAlpha=alpha;
+
+    ctx.fillStyle=color;
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+        x,
+        y,
+        28*scale,
+        0,
+        Math.PI*2
+    );
+
+
+    ctx.arc(
+        x+
+        35*scale,
+        y-
+        12*scale,
+        36*scale,
+        0,
+        Math.PI*2
+    );
+
+
+    ctx.arc(
+        x+
+        75*scale,
+        y,
+        27*scale,
+        0,
+        Math.PI*2
+    );
+
+
+    ctx.arc(
+        x+
+        48*scale,
+        y+
+        12*scale,
+        32*scale,
+        0,
+        Math.PI*2
+    );
+
+
+    ctx.fill();
+
+    ctx.restore();
+
+}
+
+
+function drawClouds(){
+
+    const now=
+        performance.now();
+
+
+    const normalTime=
+        now/10000;
+
+
+    for(
+        let i=0;
+        i<8;
+        i++
+    ){
+
+        const x=
+            (
+                i*420-
+                normalTime*25
+            )%
+            (
+                window.innerWidth+500
+            );
+
+
+        const safeX=
+            x< -120
+            ?
+            x+
+            canvas.width+
+            500
+            :
+            x;
+
+
+        const y=
+            80+
+            (i%4)*70;
+
+
+        drawCloudShape(
+            safeX,
+            y,
+            .85+
+            (i%3)*.12,
+            "#ffffff",
+            .22*
+            (
+                1-
+                weather.cloudCover*
+                .8
+            )
+        );
+
+    }
+
+
+    if(
+        weather.cloudCover>.01
+    ){
+
+        const darkTime=
+            now/7000;
+
+
+        for(
+            let i=0;
+            i<10;
+            i++
+        ){
+
+            const drift=
+                darkTime*
+                (
+                    35+
+                    i*4
+                );
+
+
+            const base=
+                (
+                    i*330-
+                    drift
+                )%
+                (
+                    canvas.width+
+                    650
+                );
+
+
+            const x=
+                base<
+                -150
+                ?
+                base+
+                canvas.width+
+                650
+                :
+                base;
+
+
+            const y=
+                55+
+                (i%5)*72;
+
+
+            const scale=
+                .95+
+                (i%4)*.15;
+
+
+            drawCloudShape(
+                x,
+                y,
+                scale,
+                "#101820",
+                .80*
+                weather.cloudCover
+            );
+
+        }
+
+    }
+
+}
+
+
+/* ============================================================
+   CHUVA
+============================================================ */
+
+function drawRain(){
+
+    if(
+        weather.rainIntensity<=.01
+    ){
+
+        return;
+
+    }
+
+
+    const now=
+        performance.now();
+
+
+    const amount=
+        Math.floor(
+            120+
+            weather.rainIntensity*
+            180
+        );
+
+
+    ctx.save();
+
+
+    ctx.strokeStyle=
+        "rgba(170,205,235,.48)";
+
+    ctx.lineWidth=1;
+
+
+    for(
+        let i=0;
+        i<amount;
+        i++
+    ){
+
+        const seed=
+            i*
+            17.123;
+
+
+        const x=
+            (
+                seed*
+                37+
+                now*
+                .18
+            )%
+            window.innerWidth;
+
+
+        const y=
+            (
+                seed*
+                73+
+                now*
+                .62
+            )%
+            window.innerHeight;
+
+
+        ctx.beginPath();
+
+
+        ctx.moveTo(
+            x,
+            y
+        );
+
+
+        ctx.lineTo(
+            x-4,
+            y+
+            14+
+            weather.rainIntensity*
+            7
+        );
+
+
+        ctx.stroke();
+
+    }
+
+
+    ctx.restore();
+
+}
+
+
+/* ============================================================
+   DESENHO DO MUNDO
+============================================================ */
+
+function drawWorld(){
+
+    const viewWidth=window.innerWidth;
+    const viewHeight=window.innerHeight;
+
+    const startX=
+        Math.floor(
+            cameraX/TILE_SIZE
+        )-2;
+
+    const endX=
+        Math.ceil(
+            (cameraX+viewWidth)/
+            TILE_SIZE
+        )+2;
+
+    const startY=
+        Math.floor(
+            cameraY/TILE_SIZE
+        )-2;
+
+    const endY=
+        Math.ceil(
+            (cameraY+viewHeight)/
+            TILE_SIZE
+        )+2;
+
+
+    /* =========================================================
+       PROFUNDIDADE — montanhas distantes e névoa
+    ========================================================= */
+
+    const horizon=
+        Math.max(
+            80,
+            viewHeight*.38
+        );
+
+    ctx.save();
+
+    ctx.globalAlpha=.16;
+    ctx.fillStyle="#172d46";
+
+    ctx.beginPath();
+    ctx.moveTo(0, horizon+100);
+
+    for(let x=0;x<=viewWidth+80;x+=80){
+
+        const wave=
+            Math.sin(
+                (x+cameraX*.12)/170
+            )*55+
+            Math.sin(
+                (x+cameraX*.07)/83
+            )*28;
+
+        ctx.lineTo(
+            x,
+            horizon-wave
+        );
+
+    }
+
+    ctx.lineTo(viewWidth,viewHeight);
+    ctx.lineTo(0,viewHeight);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.globalAlpha=.10;
+    ctx.fillStyle="#0b1c2d";
+
+    ctx.beginPath();
+    ctx.moveTo(0,horizon+160);
+
+    for(let x=0;x<=viewWidth+80;x+=65){
+
+        const wave=
+            Math.sin(
+                (x+cameraX*.18)/125
+            )*42+
+            Math.sin(
+                (x+cameraX*.09)/55
+            )*19;
+
+        ctx.lineTo(
+            x,
+            horizon+55-wave
+        );
+
+    }
+
+    ctx.lineTo(viewWidth,viewHeight);
+    ctx.lineTo(0,viewHeight);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+
+
+    /* =========================================================
+       BLOCOS — textura, bordas e iluminação
+    ========================================================= */
+
+    for(
+        let y=startY;
+        y<=endY;
+        y++
+    ){
+
+        for(
+            let x=startX;
+            x<=endX;
+            x++
+        ){
+
+            const block=
+                getBlock(x,y);
+
+            if(block==="air")
+                continue;
+
+            const px=
+                x*TILE_SIZE-cameraX;
+
+            const py=
+                y*TILE_SIZE-cameraY;
+
+            if(
+                px>TILE_SIZE+viewWidth ||
+                py>TILE_SIZE+viewHeight ||
+                px<-TILE_SIZE ||
+                py<-TILE_SIZE
+            )
+                continue;
+
+
+            if(block==="water"){
+
+                const waterLevel=
+                    getWaterLevel(x,y);
+
+                const flowOffset=
+                    Math.sin(
+                        x*.9+
+                        y*.35+
+                        performance.now()/520
+                    )*1.8;
+
+                const surfaceWave=
+                    Math.sin(
+                        x*1.7+
+                        performance.now()/650
+                    )*1.8;
+
+                const depthShade=
+                    Math.min(
+                        .24+
+                        waterLevel*.045,
+                        .42
+                    );
+
+                ctx.fillStyle=
+                    "rgba(34,137,205,.80)";
+
+                ctx.fillRect(
+                    px,
+                    py,
+                    TILE_SIZE,
+                    TILE_SIZE
+                );
+
+                ctx.fillStyle=
+                    `rgba(125,220,255,${.22+Math.max(0,4-waterLevel)*.025})`;
+
+                ctx.fillRect(
+                    px,
+                    py+4+surfaceWave+flowOffset*.15,
+                    TILE_SIZE,
+                    4
+                );
+
+                ctx.fillStyle=
+                    `rgba(10,74,145,${depthShade})`;
+
+                ctx.fillRect(
+                    px,
+                    py+TILE_SIZE-7,
+                    TILE_SIZE,
+                    7
+                );
+
+                ctx.strokeStyle=
+                    "rgba(210,245,255,.34)";
+
+                ctx.lineWidth=1;
+
+                ctx.beginPath();
+                ctx.moveTo(
+                    px+3+flowOffset,
+                    py+13+surfaceWave*.25
+                );
+                ctx.lineTo(
+                    px+13+flowOffset,
+                    py+13+surfaceWave*.25
+                );
+                ctx.moveTo(
+                    px+19-flowOffset*.5,
+                    py+22
+                );
+                ctx.lineTo(
+                    px+29-flowOffset*.5,
+                    py+22
+                );
+                ctx.stroke();
+
+                continue;
+            }
+
+
+            const info=
+                BLOCKS[block];
+
+            if(!info)
+                continue;
+
+
+            ctx.fillStyle=
+                info.color;
+
+            ctx.fillRect(
+                px,
+                py,
+                TILE_SIZE,
+                TILE_SIZE
+            );
+
+
+            /* sombra inferior */
+            ctx.fillStyle=
+                "rgba(0,0,0,.10)";
+
+            ctx.fillRect(
+                px,
+                py+TILE_SIZE-4,
+                TILE_SIZE,
+                4
+            );
+
+
+            /* borda sutil */
+            ctx.strokeStyle=
+                "rgba(0,0,0,.12)";
+
+            ctx.lineWidth=1;
+
+            ctx.strokeRect(
+                px+.5,
+                py+.5,
+                TILE_SIZE-1,
+                TILE_SIZE-1
+            );
+
+
+            /* =================================================
+               GRAMA
+            ================================================= */
+
+            if(block==="grass"){
+
+                ctx.fillStyle="#75d158";
+                ctx.fillRect(px,py,TILE_SIZE,7);
+
+                ctx.fillStyle="#4b9e3b";
+                ctx.fillRect(px,py+7,TILE_SIZE,3);
+
+                for(let i=0;i<5;i++){
+
+                    const sx=
+                        px+3+
+                        Math.floor(
+                            seededRandom(
+                                x,
+                                y,
+                                910+i
+                            )*26
+                        );
+
+                    const sy=
+                        py+11+
+                        Math.floor(
+                            seededRandom(
+                                x,
+                                y,
+                                920+i
+                            )*17
+                        );
+
+                    ctx.fillStyle=
+                        i%2===0
+                        ? "rgba(45,110,38,.28)"
+                        : "rgba(140,205,78,.22)";
+
+                    ctx.fillRect(
+                        sx,
+                        sy,
+                        2,
+                        3
+                    );
+
+                }
+
+            }
+
+
+            /* =================================================
+               TERRA / LAMA
+            ================================================= */
+
+            if(
+                block==="dirt" ||
+                block==="mud"
+            ){
+
+                for(let i=0;i<7;i++){
+
+                    const sx=
+                        px+2+
+                        Math.floor(
+                            seededRandom(
+                                x,
+                                y,
+                                930+i
+                            )*27
+                        );
+
+                    const sy=
+                        py+3+
+                        Math.floor(
+                            seededRandom(
+                                x,
+                                y,
+                                940+i
+                            )*26
+                        );
+
+                    ctx.fillStyle=
+                        block==="mud"
+                        ? (
+                            i%2
+                            ? "rgba(42,30,24,.28)"
+                            : "rgba(120,95,70,.20)"
+                        )
+                        : (
+                            i%2
+                            ? "rgba(75,42,24,.25)"
+                            : "rgba(190,120,68,.16)"
+                        );
+
+                    ctx.fillRect(
+                        sx,
+                        sy,
+                        2+(i%2),
+                        2+(i%2)
+                    );
+
+                }
+
+            }
+
+
+            /* =================================================
+               PEDRA
+            ================================================= */
+
+            if(block==="stone"){
+
+                for(let i=0;i<8;i++){
+
+                    const sx=
+                        px+2+
+                        Math.floor(
+                            seededRandom(
+                                x,
+                                y,
+                                950+i
+                            )*27
+                        );
+
+                    const sy=
+                        py+2+
+                        Math.floor(
+                            seededRandom(
+                                x,
+                                y,
+                                960+i
+                            )*27
+                        );
+
+                    ctx.fillStyle=
+                        i%3===0
+                        ? "rgba(255,255,255,.13)"
+                        : "rgba(30,35,40,.18)";
+
+                    ctx.fillRect(
+                        sx,
+                        sy,
+                        3+(i%2),
+                        2+(i%3===0?1:0)
+                    );
+
+                }
+
+            }
+
+
+            /* =================================================
+               AREIA
+            ================================================= */
+
+            if(block==="sand"){
+
+                for(let i=0;i<9;i++){
+
+                    const sx=
+                        px+2+
+                        Math.floor(
+                            seededRandom(
+                                x,
+                                y,
+                                970+i
+                            )*28
+                        );
+
+                    const sy=
+                        py+2+
+                        Math.floor(
+                            seededRandom(
+                                x,
+                                y,
+                                980+i
+                            )*28
+                        );
+
+                    ctx.fillStyle=
+                        i%2
+                        ? "rgba(135,105,46,.20)"
+                        : "rgba(255,240,170,.22)";
+
+                    ctx.fillRect(
+                        sx,
+                        sy,
+                        2,
+                        2
+                    );
+
+                }
+
+            }
+
+
+            /* =================================================
+               NEVE
+            ================================================= */
+
+            if(block==="snow"){
+
+                ctx.fillStyle=
+                    "rgba(255,255,255,.72)";
+
+                ctx.fillRect(
+                    px,
+                    py,
+                    TILE_SIZE,
+                    7
+                );
+
+                ctx.fillStyle=
+                    "rgba(155,190,215,.18)";
+
+                ctx.fillRect(
+                    px,
+                    py+7,
+                    TILE_SIZE,
+                    3
+                );
+
+                for(let i=0;i<5;i++){
+
+                    const sx=
+                        px+3+
+                        Math.floor(
+                            seededRandom(x,y,990+i)*27
+                        );
+
+                    const sy=
+                        py+12+
+                        Math.floor(
+                            seededRandom(x,y,1000+i)*16
+                        );
+
+                    ctx.fillStyle=
+                        "rgba(120,160,185,.20)";
+
+                    ctx.fillRect(sx,sy,3,2);
+
+                }
+
+            }
+
+
+            /* =================================================
+               MADEIRA
+            ================================================= */
+
+            if(block==="wood"){
+
+                ctx.fillStyle=
+                    "rgba(52,27,13,.32)";
+
+                ctx.fillRect(
+                    px+5,
+                    py,
+                    4,
+                    TILE_SIZE
+                );
+
+                ctx.fillRect(
+                    px+21,
+                    py,
+                    3,
+                    TILE_SIZE
+                );
+
+                ctx.strokeStyle=
+                    "rgba(220,155,85,.25)";
+
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    px+13,
+                    py+2
+                );
+
+                ctx.lineTo(
+                    px+13,
+                    py+29
+                );
+
+                ctx.stroke();
+
+                ctx.strokeStyle=
+                    "rgba(255,215,140,.22)";
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    px+16,
+                    py+16,
+                    6,
+                    0,
+                    Math.PI*2
+                );
+
+                ctx.stroke();
+
+            }
+
+
+            /* =================================================
+               FOLHAS
+            ================================================= */
+
+            if(block==="leaves"){
+
+                for(let i=0;i<8;i++){
+
+                    const sx=
+                        px+1+
+                        Math.floor(
+                            seededRandom(x,y,1010+i)*29
+                        );
+
+                    const sy=
+                        py+1+
+                        Math.floor(
+                            seededRandom(x,y,1020+i)*29
+                        );
+
+                    ctx.fillStyle=
+                        i%3===0
+                        ? "rgba(175,235,100,.30)"
+                        : "rgba(20,95,42,.22)";
+
+                    ctx.fillRect(
+                        sx,
+                        sy,
+                        4,
+                        4
+                    );
+
+                }
+
+            }
+
+
+            /* =================================================
+               MINÉRIOS — veios maiores e brilhantes
+            ================================================= */
+
+            if(
+                block==="coal" ||
+                block==="iron" ||
+                block==="gold"
+            ){
+
+                const palette={
+                    coal:{
+                        dark:"#14171a",
+                        light:"#596068"
+                    },
+                    iron:{
+                        dark:"#7e786f",
+                        light:"#e8dfcf"
+                    },
+                    gold:{
+                        dark:"#a47716",
+                        light:"#ffe875"
+                    }
+                }[block];
+
+                ctx.fillStyle=
+                    palette.dark;
+
+                const oreSpots=[
+                    [5,7,7,6],
+                    [18,5,6,7],
+                    [11,17,8,7],
+                    [21,21,6,6]
+                ];
+
+                oreSpots.forEach(
+                    (spot,index)=>{
+
+                        if(
+                            seededRandom(
+                                x,
+                                y,
+                                1030+index
+                            )>.20
+                        ){
+
+                            ctx.fillRect(
+                                px+spot[0],
+                                py+spot[1],
+                                spot[2],
+                                spot[3]
+                            );
+
+                        }
+
+                    }
+                );
+
+                ctx.fillStyle=
+                    palette.light;
+
+                ctx.fillRect(
+                    px+7,
+                    py+8,
+                    3,
+                    3
+                );
+
+                ctx.fillRect(
+                    px+20,
+                    py+6,
+                    3,
+                    3
+                );
+
+            }
+
+
+            /* =================================================
+               CACTO
+            ================================================= */
+
+            if(block==="cactus"){
+
+                ctx.fillStyle="#4cac50";
+                ctx.fillRect(
+                    px+8,
+                    py,
+                    16,
+                    TILE_SIZE
+                );
+
+                ctx.fillStyle="#226b35";
+                ctx.fillRect(
+                    px+9,
+                    py,
+                    3,
+                    TILE_SIZE
+                );
+
+                ctx.fillStyle="#8bd46a";
+
+                for(let i=0;i<5;i++){
+
+                    const sy=
+                        py+4+i*5;
+
+                    ctx.fillRect(
+                        px+13,
+                        sy,
+                        5,
+                        1
+                    );
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    /* =========================================================
+       ÁRVORES — silhuetas detalhadas por bioma
+    ========================================================= */
+
+    for(
+        let x=startX-1;
+        x<=endX+1;
+        x++
+    ){
+
+        if(!hasTreeAt(x))
+            continue;
+
+        const surface=
+            getSurfaceBlockY(x);
+
+        const height=
+            getTreeHeight(x);
+
+        const biome=
+            getBiome(x);
+
+        const baseX=
+            x*TILE_SIZE-cameraX;
+
+        const baseY=
+            surface*TILE_SIZE-cameraY;
+
+        const trunkHeight=
+            height*TILE_SIZE;
+
+        let trunkColor="#74451f";
+        let leafColor="#2f8c42";
+        let leafLight="#65bd4b";
+
+        if(biome.name==="Taiga"){
+            trunkColor="#68452f";
+            leafColor="#245d3d";
+            leafLight="#3f8b58";
+        }
+
+        if(biome.name==="Pântano"){
+            trunkColor="#503a28";
+            leafColor="#286c39";
+            leafLight="#4c9a45";
+        }
+
+        if(biome.name==="Savana"){
+            trunkColor="#8a5a2c";
+            leafColor="#568d35";
+            leafLight="#8ab64d";
+        }
+
+        if(biome.name==="Floresta Sombria"){
+            trunkColor="#422c22";
+            leafColor="#1e4d32";
+            leafLight="#3c7650";
+        }
+
+
+        /* sombra da copa */
+
+        ctx.fillStyle="rgba(0,0,0,.12)";
+
+        ctx.beginPath();
+
+        ctx.ellipse(
+            baseX+16,
+            baseY-5,
+            35,
+            8,
+            0,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+
+        /* tronco */
+
+        ctx.fillStyle=trunkColor;
+
+        ctx.fillRect(
+            baseX+11,
+            baseY-trunkHeight,
+            11,
+            trunkHeight
+        );
+
+        ctx.fillStyle="rgba(255,205,120,.18)";
+
+        ctx.fillRect(
+            baseX+13,
+            baseY-trunkHeight,
+            3,
+            trunkHeight
+        );
+
+
+        /* copa */
+
+        const crownY=
+            baseY-
+            trunkHeight+
+            18;
+
+        ctx.fillStyle=leafColor;
+
+        if(
+            biome.name==="Taiga"
+        ){
+
+            for(let layer=0;layer<4;layer++){
+
+                const width=
+                    55-layer*10;
+
+                const y=
+                    crownY+
+                    layer*14;
+
+                ctx.beginPath();
+                ctx.moveTo(baseX+16,y-25);
+                ctx.lineTo(
+                    baseX+16-width/2,
+                    y+16
+                );
+                ctx.lineTo(
+                    baseX+16+width/2,
+                    y+16
+                );
+                ctx.closePath();
+                ctx.fill();
+
+            }
+
+        }else if(
+            biome.name==="Savana"
+        ){
+
+            ctx.beginPath();
+
+            ctx.ellipse(
+                baseX+16,
+                crownY,
+                39,
+                24,
+                0,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
+
+        }else{
+
+            const blobs=[
+                [-22,0,23],
+                [0,-17,28],
+                [24,1,24],
+                [4,14,29],
+                [-5,-2,28]
+            ];
+
+            blobs.forEach(
+                blob=>{
+
+                    ctx.beginPath();
+
+                    ctx.arc(
+                        baseX+16+blob[0],
+                        crownY+blob[1],
+                        blob[2],
+                        0,
+                        Math.PI*2
+                    );
+
+                    ctx.fill();
+
+                }
+            );
+
+        }
+
+        ctx.fillStyle=leafLight;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            baseX+7,
+            crownY-10,
+            10,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle="rgba(170,235,110,.18)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            baseX+24,
+            crownY-17,
+            7,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+    }
+
+
+    /* =========================================================
+       CACTOS GRANDES
+    ========================================================= */
+
+    for(
+        let x=startX;
+        x<=endX;
+        x++
+    ){
+
+        if(!hasCactusAt(x))
+            continue;
+
+        const surface=
+            getSurfaceBlockY(x);
+
+        const height=
+            getCactusHeight(x);
+
+        const baseX=
+            x*TILE_SIZE-cameraX;
+
+        const baseY=
+            surface*TILE_SIZE-cameraY;
+
+        const h=
+            height*TILE_SIZE;
+
+        ctx.fillStyle="#3b9d48";
+
+        ctx.fillRect(
+            baseX+9,
+            baseY-h,
+            14,
+            h
+        );
+
+        ctx.fillStyle="#1e6937";
+
+        ctx.fillRect(
+            baseX+10,
+            baseY-h,
+            3,
+            h
+        );
+
+        ctx.fillStyle="#78c85c";
+
+        for(let i=0;i<height*3;i++){
+
+            ctx.fillRect(
+                baseX+14,
+                baseY-h+7+i*9,
+                5,
+                1
+            );
+
+        }
+
+        if(height>=2){
+
+            ctx.fillRect(
+                baseX+2,
+                baseY-h+24,
+                8,
+                19
+            );
+
+            ctx.fillRect(
+                baseX+1,
+                baseY-h+22,
+                10,
+                5
+            );
+
+        }
+
+        if(height>=3){
+
+            ctx.fillRect(
+                baseX+23,
+                baseY-h+43,
+                8,
+                18
+            );
+
+            ctx.fillRect(
+                baseX+22,
+                baseY-h+40,
+                10,
+                5
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       DETALHES DE SOLO — grama, flores e cogumelos
+    ========================================================= */
+
+    for(
+        let x=startX;
+        x<=endX;
+        x++
+    ){
+
+        const surface=
+            getSurfaceBlockY(x);
+
+        const px=
+            x*TILE_SIZE-cameraX;
+
+        const py=
+            surface*TILE_SIZE-cameraY;
+
+
+        if(hasGrassDetailAt(x)){
+
+            ctx.strokeStyle="#3f923d";
+            ctx.lineWidth=2;
+
+            ctx.beginPath();
+
+            ctx.moveTo(px+8,py);
+            ctx.lineTo(px+6,py-9);
+
+            ctx.moveTo(px+14,py);
+            ctx.lineTo(px+17,py-11);
+
+            ctx.stroke();
+
+        }
+
+
+        if(hasFlowerAt(x)){
+
+            ctx.strokeStyle="#4b963d";
+            ctx.lineWidth=1;
+
+            ctx.beginPath();
+            ctx.moveTo(px+16,py);
+            ctx.lineTo(px+16,py-10);
+            ctx.stroke();
+
+            ctx.fillStyle=
+                seededRandom(x,surface,603)>.5
+                ? "#ffd85a"
+                : "#f16b85";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                px+16,
+                py-13,
+                4,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
+
+            ctx.fillStyle="#fff0a0";
+
+            ctx.fillRect(
+                px+15,
+                py-14,
+                2,
+                2
+            );
+
+        }
+
+
+        if(hasMushroomAt(x)){
+
+            ctx.fillStyle="#d9554a";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                px+16,
+                py-8,
+                8,
+                Math.PI,
+                Math.PI*2
+            );
+
+            ctx.fill();
+
+            ctx.fillStyle="#eee2d1";
+
+            ctx.fillRect(
+                px+14,
+                py-5,
+                5,
+                7
+            );
+
+            ctx.fillStyle="rgba(255,255,255,.75)";
+
+            ctx.fillRect(px+12,py-9,2,2);
+            ctx.fillRect(px+17,py-11,2,2);
+
+        }
+
+    }
+
+
+    /* =========================================================
+       SOMBRA DE PROFUNDIDADE / ESCURIDÃO SUBTERRÂNEA
+    ========================================================= */
+
+    for(
+        let y=startY;
+        y<=endY;
+        y++
+    ){
+
+        if(y<SEA_LEVEL+3)
+            continue;
+
+        const darkness=
+            clamp(
+                (y-SEA_LEVEL-3)*.018,
+                0,
+                .34
+            );
+
+        if(darkness<=0)
+            continue;
+
+        ctx.fillStyle=
+            `rgba(8,12,18,${darkness})`;
+
+        ctx.fillRect(
+            0,
+            y*TILE_SIZE-cameraY,
+            viewWidth,
+            TILE_SIZE
+        );
+
+    }
+
+
+    /* =========================================================
+       BRILHO AMBIENTAL — noite/dia
+    ========================================================= */
+
+    const now=
+        performance.now();
+
+    const dayDuration=
+        15*60*1000;
+
+    const cycle=
+        (
+            now%
+            (dayDuration*2)
+        )/
+        (dayDuration*2);
+
+    const daylight=
+        Math.sin(
+            cycle*Math.PI*2
+        )*.5+.5;
+
+    if(daylight<.34){
+
+        const night=
+            clamp(
+                (.34-daylight)/.34,
+                0,
+                1
+            );
+
+        ctx.fillStyle=
+            `rgba(4,9,24,${night*.24})`;
+
+        ctx.fillRect(
+            0,
+            0,
+            viewWidth,
+            viewHeight
+        );
+
+    }
+
+
+    /* Destaque do bloco apontado pelo mouse.
+       Ajuda a enxergar exatamente o bloco que será quebrado. */
+    if(mouseBlock.active){
+
+        const bx=
+            mouseBlock.x*TILE_SIZE-
+            cameraX;
+
+        const by=
+            mouseBlock.y*TILE_SIZE-
+            cameraY;
+
+        if(
+            canReachBlock(
+                mouseBlock.x,
+                mouseBlock.y
+            )
+        ){
+
+            ctx.strokeStyle=
+                "rgba(255,255,255,.82)";
+
+            ctx.lineWidth=2;
+
+            ctx.strokeRect(
+                bx+1,
+                by+1,
+                TILE_SIZE-2,
+                TILE_SIZE-2
+            );
+
+        }
+
+    }
+
+}
+function drawPlayer(){
+
+    const px=
+        player.x-
+        cameraX;
+
+    const py=
+        player.y-
+        cameraY;
+
+
+    /* sombra no chão */
+    ctx.fillStyle="rgba(0,0,0,.22)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        px+player.width/2,
+        py+player.height+3,
+        14,
+        4,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* pernas */
+    ctx.fillStyle="#253d78";
+
+    ctx.fillRect(
+        px+3,
+        py+31,
+        7,
+        13
+    );
+
+    ctx.fillRect(
+        px+12,
+        py+31,
+        7,
+        13
+    );
+
+
+    /* botas */
+    ctx.fillStyle="#151a25";
+
+    ctx.fillRect(
+        px+2,
+        py+40,
+        9,
+        5
+    );
+
+    ctx.fillRect(
+        px+11,
+        py+40,
+        10,
+        5
+    );
+
+
+    /* corpo */
+    ctx.fillStyle="#3d83e8";
+
+    ctx.fillRect(
+        px+2,
+        py+18,
+        player.width-4,
+        16
+    );
+
+    ctx.fillStyle="#6eafff";
+
+    ctx.fillRect(
+        px+4,
+        py+20,
+        4,
+        11
+    );
+
+
+    /* braços */
+    ctx.fillStyle="#f0bd92";
+
+    ctx.fillRect(
+        px-2,
+        py+20,
+        5,
+        12
+    );
+
+    ctx.fillRect(
+        px+19,
+        py+20,
+        5,
+        12
+    );
+
+
+    /* cabeça */
+    ctx.fillStyle="#f1c39b";
+
+    ctx.fillRect(
+        px+3,
+        py+3,
+        player.width-6,
+        17
+    );
+
+
+    /* cabelo */
+    ctx.fillStyle="#4b2c20";
+
+    ctx.fillRect(
+        px+3,
+        py+3,
+        player.width-6,
+        5
+    );
+
+    ctx.fillRect(
+        px+3,
+        py+6,
+        4,
+        5
+    );
+
+
+    /* olhos */
+    ctx.fillStyle="#10151c";
+
+    ctx.fillRect(
+        px+7,
+        py+11,
+        3,
+        3
+    );
+
+    ctx.fillRect(
+        px+14,
+        py+11,
+        3,
+        3
+    );
+
+
+    /* brilho dos olhos */
+    ctx.fillStyle="#ffffff";
+
+    ctx.fillRect(
+        px+8,
+        py+11,
+        1,
+        1
+    );
+
+    ctx.fillRect(
+        px+15,
+        py+11,
+        1,
+        1
+    );
+
+
+    /* boca */
+    ctx.fillStyle="rgba(110,55,45,.55)";
+
+    ctx.fillRect(
+        px+9,
+        py+16,
+        5,
+        1
+    );
+
+}
+function updateHUD(){
+
+    document.getElementById(
+        "hudUsername"
+    ).textContent=
+        currentUsername||
+        "Jogador";
+
+
+    const health=
+        Math.round(
+            player.health
+        );
+
+
+    const hunger=
+        Math.round(
+            player.hunger
+        );
+
+
+    document.getElementById(
+        "healthText"
+    ).textContent=
+        health;
+
+
+    document.getElementById(
+        "hungerText"
+    ).textContent=
+        hunger;
+
+
+    document.getElementById(
+        "healthFill"
+    ).style.width=
+        health+
+        "%";
+
+
+    document.getElementById(
+        "hungerFill"
+    ).style.width=
+        hunger+
+        "%";
+
+
+    document.getElementById(
+        "posX"
+    ).textContent=
+        Math.floor(
+            player.x/
+            TILE_SIZE
+        );
+
+
+    document.getElementById(
+        "posY"
+    ).textContent=
+        Math.floor(
+            player.y/
+            TILE_SIZE
+        );
+
+
+    document.getElementById(
+        "chunkText"
+    ).textContent=
+        `${getChunkX(player.x)}, ${getChunkY(player.y)}`;
+
+}
+
+
+/* ============================================================
+   LOOP
+============================================================ */
+
+function gameLoop(){
+
+    if(gameRunning){
+
+        if(!gamePaused){
+
+            updateWeather();
+
+            updateWaterPhysics();
+
+            updatePlayer();
+
+        }
+
+
+        cameraX=
+            player.x-
+            canvas.width/2;
+
+
+        cameraY=
+            player.y-
+            canvas.height*.55;
+
+
+        drawSky();
+
+        drawClouds();
+
+        drawWorld();
+
+        drawRain();
+
+        drawPlayer();
+
+        updateHUD();
+
+    }
+
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
+
+/* ============================================================
+   INVENTÁRIO → SUPABASE
+============================================================ */
+
+async function savePlayerInventory(){
+
+    if(!currentPlayer)
+        return false;
+
+    const inventoryData=
+        hotbar
+            .filter(
+                item=>Number(item.count)>0
+            )
+            .map(
+                item=>({
+
+                    id:item.id,
+
+                    name:item.name,
+
+                    icon:item.icon,
+
+                    count:Math.max(
+                        0,
+                        Math.floor(
+                            Number(
+                                item.count
+                            )||0
+                        )
+                    )
+
+                })
+            );
+
+    const {error}=
+        await supabaseClient
+            .from("player_inventory")
+            .upsert(
+                {
+                    user_id:
+                        currentPlayer.id,
+
+                    inventory:
+                        inventoryData,
+
+                    updated_at:
+                        new Date().toISOString()
+                },
+                {
+                    onConflict:
+                        "user_id"
+                }
+            );
+
+    if(error){
+
+        console.error(
+            "ERRO AO SALVAR INVENTÁRIO:",
+            error
+        );
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+
+/* ============================================================
+   CHUNKS → SUPABASE
+============================================================ */
+
+async function saveExploredChunks(){
+
+    if(!currentPlayer)
+        return false;
+
+
+    const keys=
+        Object.keys(
+            exploredChunks
+        );
+
+
+    if(
+        keys.length===0
+    )
+        return true;
+
+
+    const batch=
+        keys.map(
+            key=>{
+
+                const parts=
+                    key.split(",");
+
+
+                const chunkX=
+                    parseInt(
+                        parts[0],
+                        10
+                    );
+
+
+                const chunkY=
+                    parseInt(
+                        parts[1],
+                        10
+                    );
+
+
+                return {
+
+                    user_id:
+                        currentPlayer.id,
+
+                    chunk_x:
+                        chunkX,
+
+                    chunk_y:
+                        chunkY,
+
+                    data:{
+                        seed:
+                            worldSeed,
+
+                        modifiedBlocks:
+                            modifiedBlocks[key]||
+                            {}
+
+                    },
+
+                    explored:true,
+
+                    updated_at:
+                        new Date().toISOString()
+
+                };
+
+            }
+        );
+
+
+    const batchSize=50;
+
+
+    for(
+        let i=0;
+        i<batch.length;
+        i+=batchSize
+    ){
+
+        const part=
+            batch.slice(
+                i,
+                i+batchSize
+            );
+
+
+        const {error}=
+            await supabaseClient
+                .from("world_chunks")
+                .upsert(
+                    part,
+                    {
+                        onConflict:
+                            "user_id,chunk_x,chunk_y"
+                    }
+                );
+
+
+        if(error){
+
+            console.error(
+                "ERRO AO SALVAR REGIÕES:",
+                error
+            );
+
+            return false;
+
+        }
+
+    }
+
+
+    return true;
+
+}
+
+
+/* ============================================================
+   SALVAR MUNDO
+============================================================ */
+
+async function savePlayerWorld(){
+
+    if(!currentPlayer)
+        return false;
+
+
+    setSaveStatus(
+        "Salvando..."
+    );
+
+
+    try{
+
+        const {
+            data:sessionData,
+            error:sessionError
+        }=
+            await supabaseClient
+                .auth
+                .getSession();
+
+
+        if(
+            sessionError||
+            !sessionData.session
+        ){
+
+            console.error(
+                "SESSÃO AUSENTE:",
+                sessionError
+            );
+
+
+            setSaveStatus(
+                "Sessão expirada"
+            );
+
+
+            return false;
+
+        }
+
+
+        const savedHealth=
+            Math.max(
+                0,
+                Math.min(
+                    100,
+                    Math.round(
+                        Number(
+                            player.health
+                        )||0
+                    )
+                )
+            );
+
+
+        const savedHunger=
+            Math.max(
+                0,
+                Math.min(
+                    100,
+                    Math.round(
+                        Number(
+                            player.hunger
+                        )||0
+                    )
+                )
+            );
+
+
+        const savedX=
+            Number(
+                player.x
+            )||0;
+
+
+        const savedY=
+            Number(
+                player.y
+            )||0;
+
+
+        const {error}=
+            await supabaseClient
+                .from("worlds")
+                .update({
+
+                    player_x:
+                        savedX,
+
+                    player_y:
+                        savedY,
+
+                    health:
+                        savedHealth,
+
+                    hunger:
+                        savedHunger,
+
+                    updated_at:
+                        new Date().toISOString()
+
+                })
+                .eq(
+                    "user_id",
+                    currentPlayer.id
+                );
+
+
+        if(error){
+
+            console.error(
+                "ERRO AO SALVAR MUNDO:",
+                error
+            );
+
+
+            setSaveStatus(
+                "Erro ao salvar mundo"
+            );
+
+
+            return false;
+
+        }
+
+
+        const inventorySaved=
+            await savePlayerInventory();
+
+
+        if(!inventorySaved){
+
+            setSaveStatus(
+                "Erro no inventário"
+            );
+
+            return false;
+
+        }
+
+
+        const chunksSaved=
+            await saveExploredChunks();
+
+
+        if(!chunksSaved){
+
+            setSaveStatus(
+                "Erro nas regiões"
+            );
+
+            return false;
+
+        }
+
+
+        setSaveStatus(
+            "Salvo ✓"
+        );
+
+
+        return true;
+
+    }catch(error){
+
+        console.error(
+            "ERRO GERAL AO SALVAR:",
+            error
+        );
+
+
+        setSaveStatus(
+            "Erro ao salvar"
+        );
+
+
+        return false;
+
+    }
+
+}
+
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+function setSaveStatus(text){
+
+    document.getElementById(
+        "saveStatus"
+    ).textContent=
+        text;
+
+}
+
+
+/* ============================================================
+   CRIAR MUNDO
+============================================================ */
+
+async function createPlayerWorld(
+    userId
+){
+
+    hotbar=[];
+    selectedSlot=0;
+
+    const seed=
+        randomSeed();
+
+
+    const {error:worldError}=
+        await supabaseClient
+            .from("worlds")
+            .insert({
+
+                user_id:
+                    userId,
+
+                seed:
+                    seed,
+
+                world_size:
+                    WORLD_LIMIT,
+
+                player_x:
+                    0,
+
+                player_y:
+                    0,
+
+                health:
+                    100,
+
+                hunger:
+                    100
+
+            });
+
+
+    if(worldError){
+
+        console.error(
+            "ERRO AO CRIAR MUNDO:",
+            worldError
+        );
+
+        throw worldError;
+
+    }
+
+
+    const {error:inventoryError}=
+        await supabaseClient
+            .from("player_inventory")
+            .insert({
+
+                user_id:
+                    userId,
+
+                inventory:[]
+
+            });
+
+
+    if(inventoryError){
+
+        console.error(
+            "ERRO AO CRIAR INVENTÁRIO:",
+            inventoryError
+        );
+
+        throw inventoryError;
+
+    }
+
+
+    return seed;
+
+}
+
+
+/* ============================================================
+   CARREGAR MUNDO
+============================================================ */
+
+async function loadPlayerWorld(){
+
+    if(!currentPlayer)
+        return false;
+
+
+    setSaveStatus(
+        "Carregando..."
+    );
+
+    hotbar=[];
+    selectedSlot=0;
+
+
+    const {
+        data:world,
+        error:worldError
+    }=
+        await supabaseClient
+            .from("worlds")
+            .select("*")
+            .eq(
+                "user_id",
+                currentPlayer.id
+            )
+            .maybeSingle();
+
+
+    if(worldError){
+
+        console.error(
+            "ERRO AO CARREGAR MUNDO:",
+            worldError
+        );
+
+
+        setSaveStatus(
+            "Erro ao carregar"
+        );
+
+
+        return false;
+
+    }
+
+
+    if(!world){
+
+        try{
+
+            worldSeed=
+                await createPlayerWorld(
+                    currentPlayer.id
+                );
+
+
+            placePlayerAtSpawn();
+
+
+            exploredChunks={};
+
+            modifiedBlocks={};
+
+
+            markCurrentChunkExplored();
+
+
+            await savePlayerWorld();
+
+
+            initializeWeather();
+
+
+            return true;
+
+        }catch(error){
+
+            console.error(
+                "ERRO AO CRIAR MUNDO:",
+                error
+            );
+
+
+            setSaveStatus(
+                "Erro ao criar mundo"
+            );
+
+
+            return false;
+
+        }
+
+    }
+
+
+    worldSeed=
+        Number(
+            world.seed
+        );
+
+
+    player.x=
+        Number(
+            world.player_x
+        )||0;
+
+
+    player.y=
+        Number(
+            world.player_y
+        )||0;
+
+
+    player.health=
+        clamp(
+            Number(
+                world.health
+            )||100,
+            0,
+            100
+        );
+
+
+    player.hunger=
+        clamp(
+            Number(
+                world.hunger
+            )||100,
+            0,
+            100
+        );
+
+
+    player.vx=0;
+
+    player.vy=0;
+
+    player.onGround=false;
+
+
+    const {
+        data:inventoryData,
+        error:inventoryError
+    }=
+        await supabaseClient
+            .from("player_inventory")
+            .select("inventory")
+            .eq(
+                "user_id",
+                currentPlayer.id
+            )
+            .maybeSingle();
+
+
+    if(inventoryError){
+
+        console.error(
+            "ERRO AO CARREGAR INVENTÁRIO:",
+            inventoryError
+        );
+
+    }else if(
+        inventoryData &&
+        Array.isArray(
+            inventoryData.inventory
+        )
+    ){
+
+        /* Compatível com o formato antigo e com o novo formato. */
+        hotbar=[];
+
+        inventoryData.inventory.forEach(
+            saved=>{
+
+                if(!saved || !saved.id)
+                    return;
+
+                const definition=
+                    getInventoryDefinition(
+                        saved.id
+                    );
+
+                const count=
+                    Math.floor(
+                        Number(saved.count)||0
+                    );
+
+                if(
+                    definition &&
+                    count>0
+                ){
+
+                    hotbar.push({
+                        id:definition.id,
+                        name:definition.name,
+                        icon:definition.icon,
+                        count
+                    });
+
+                }
+
+            }
+        );
+
+    }else{
+
+        hotbar=[];
+
+    }
+
+
+    exploredChunks={};
+
+    modifiedBlocks={};
+
+    for(const key of Object.keys(waterLevels)){
+        delete waterLevels[key];
+    }
+
+    lastWaterSimulation=performance.now();
+
+
+    const {
+        data:chunks,
+        error:chunksError
+    }=
+        await supabaseClient
+            .from("world_chunks")
+            .select(
+                "chunk_x,chunk_y,data,explored"
+            )
+            .eq(
+                "user_id",
+                currentPlayer.id
+            );
+
+
+    if(chunksError){
+
+        console.error(
+            "ERRO AO CARREGAR REGIÕES:",
+            chunksError
+        );
+
+    }else{
+
+        chunks.forEach(
+            chunk=>{
+
+                const key=
+                    getChunkKey(
+                        chunk.chunk_x,
+                        chunk.chunk_y
+                    );
+
+
+                if(
+                    chunk.explored
+                ){
+
+                    exploredChunks[key]=
+                        true;
+
+                }
+
+
+                if(
+                    chunk.data &&
+                    chunk.data.modifiedBlocks
+                ){
+
+                    modifiedBlocks[key]=
+                        chunk.data.modifiedBlocks;
+
+                }
+
+            }
+        );
+
+    }
+
+
+    if(
+        !Number.isFinite(
+            player.x
+        )||
+        !Number.isFinite(
+            player.y
+        )
+    ){
+
+        placePlayerAtSpawn();
+
+    }else{
+
+        const groundY=
+            getGroundY();
+
+
+        if(
+            player.y>=groundY-8 &&
+            player.y<=groundY+8
+        ){
+
+            player.y=
+                groundY;
+
+            player.vy=0;
+
+            player.onGround=true;
+
+        }else if(
+            collidesAt(
+                player.x,
+                player.y
+            )
+        ){
+
+            placePlayerAtSpawn();
+
+        }
+
+    }
+
+
+    markCurrentChunkExplored();
+
+
+    updateHotbar();
+
+
+    initializeWeather();
+
+
+    setSaveStatus(
+        "Mundo carregado ✓"
+    );
+
+
+    return true;
+
+}
+
+
+/* ============================================================
+   INICIAR JOGO
+============================================================ */
+
+async function startGame(){
+
+    worldScreen.classList.add(
+        "hidden"
+    );
+
+
+    gameScreen.classList.remove(
+        "hidden"
+    );
+
+
+    gamePaused=false;
+
+    gameRunning=true;
+
+
+    keys[" "]=false;
+
+    keys["space"]=false;
+
+
+    player.vx=0;
+
+    player.vy=0;
+
+
+    pauseOverlay.classList.add(
+        "hidden"
+    );
+
+
+    resizeCanvas();
+
+
+    updateHotbar();
+
+    updateHUD();
+
+
+    if(
+        !Number.isFinite(
+            player.x
+        )||
+        !Number.isFinite(
+            player.y
+        )
+    ){
+
+        placePlayerAtSpawn();
+
+    }
+
+
+    if(
+        collidesAt(
+            player.x,
+            player.y
+        )
+    ){
+
+        placePlayerAtSpawn();
+
+    }else{
+
+        const groundY=
+            getGroundY();
+
+
+        if(
+            player.y>=groundY-8 &&
+            player.y<=groundY+8
+        ){
+
+            player.y=
+                groundY;
+
+            player.vy=0;
+
+            player.onGround=true;
+
+        }else{
+
+            player.onGround=false;
+
+        }
+
+    }
+
+
+    initializeWeather();
+
+}
+
+
+/* ============================================================
+   PAUSA
+============================================================ */
+
+function togglePause(){
+
+    if(!gameRunning)
+        return;
+
+
+    gamePaused=
+        !gamePaused;
+
+
+    if(gamePaused){
+
+        pauseOverlay.classList.remove(
+            "hidden"
+        );
+
+    }else{
+
+        pauseOverlay.classList.add(
+            "hidden"
+        );
+
+
+        keys[" "]=false;
+
+        keys["space"]=false;
+
+    }
+
+}
+
+
+/* ============================================================
+   VOLTAR AO MENU
+============================================================ */
+
+async function returnToMenu(){
+
+    gamePaused=true;
+
+
+    pauseOverlay.classList.add(
+        "hidden"
+    );
+
+
+    await savePlayerWorld();
+
+
+    gameRunning=false;
+
+
+    gameScreen.classList.add(
+        "hidden"
+    );
+
+
+    menuScreen.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+/* ============================================================
+   AUTOSAVE
+============================================================ */
+
+let autosaveTimer=null;
+
+
+function startAutosave(){
+
+    if(autosaveTimer){
+
+        clearInterval(
+            autosaveTimer
+        );
+
+    }
+
+
+    autosaveTimer=
+        setInterval(
+            ()=>{
+
+                if(
+                    gameRunning &&
+                    !gamePaused &&
+                    currentPlayer
+                ){
+
+                    savePlayerWorld();
+
+                }
+
+            },
+            15000
+        );
+
+}
+
+
+/* ============================================================
+   MODO CONTA
+============================================================ */
+
+function setAccountMode(mode){
+
+    accountMode=mode;
+
+
+    accountMessage.textContent="";
+
+
+    if(
+        mode==="login"
+    ){
+
+        loginTab.classList.add(
+            "active"
+        );
+
+
+        registerTab.classList.remove(
+            "active"
+        );
+
+
+        confirmGroup.classList.add(
+            "hidden"
+        );
+
+
+        accountAction.textContent=
+            "Entrar";
+
+    }else{
+
+        registerTab.classList.add(
+            "active"
+        );
+
+
+        loginTab.classList.remove(
+            "active"
+        );
+
+
+        confirmGroup.classList.remove(
+            "hidden"
+        );
+
+
+        accountAction.textContent=
+            "Criar conta";
+
+    }
+
+}
+
+
+/* ============================================================
+   LOGIN
+============================================================ */
+
+async function login(){
+
+    const username=
+        normalizeUsername(
+            usernameInput.value
+        );
+
+
+    const password=
+        passwordInput.value;
+
+
+    if(!username){
+
+        accountMessage.textContent=
+            "Digite seu nome de usuário.";
+
+        return;
+
+    }
+
+
+    if(
+        password.length<6
+    ){
+
+        accountMessage.textContent=
+            "A senha precisa ter pelo menos 6 caracteres.";
+
+        return;
+
+    }
+
+
+    accountMessage.textContent=
+        "Entrando...";
+
+
+    const email=
+        usernameToEmail(
+            username
+        );
+
+
+    const {
+        data,
+        error
+    }=
+        await supabaseClient
+            .auth
+            .signInWithPassword({
+
+                email,
+
+                password
+
+            });
+
+
+    if(error){
+
+        console.error(
+            "ERRO LOGIN:",
+            error
+        );
+
+
+        accountMessage.textContent=
+            error.message||
+            "Não foi possível entrar.";
+
+
+        return;
+
+    }
+
+
+    currentPlayer=
+        data.user;
+
+
+    currentUsername=
+        username;
+
+
+    await finishLogin();
+
+}
+
+
+/* ============================================================
+   CADASTRO
+============================================================ */
+
+async function register(){
+
+    const username=
+        normalizeUsername(
+            usernameInput.value
+        );
+
+
+    const password=
+        passwordInput.value;
+
+
+    const confirm=
+        confirmPasswordInput.value;
+
+
+    if(
+        username.length<3
+    ){
+
+        accountMessage.textContent=
+            "O nome precisa ter pelo menos 3 caracteres.";
+
+        return;
+
+    }
+
+
+    if(
+        password.length<6
+    ){
+
+        accountMessage.textContent=
+            "A senha precisa ter pelo menos 6 caracteres.";
+
+        return;
+
+    }
+
+
+    if(
+        password!==confirm
+    ){
+
+        accountMessage.textContent=
+            "As senhas não são iguais.";
+
+        return;
+
+    }
+
+
+    accountMessage.textContent=
+        "Criando conta...";
+
+
+    const email=
+        usernameToEmail(
+            username
+        );
+
+
+    const {
+        data,
+        error
+    }=
+        await supabaseClient
+            .auth
+            .signUp({
+
+                email,
+
+                password,
+
+                options:{
+                    data:{
+                        username
+                    }
+                }
+
+            });
+
+
+    if(error){
+
+        console.error(
+            "ERRO CADASTRO:",
+            error
+        );
+
+
+        accountMessage.textContent=
+            error.message||
+            "Não foi possível criar a conta.";
+
+
+        return;
+
+    }
+
+
+    if(
+        !data.session
+    ){
+
+        accountMessage.textContent=
+            "Conta criada. Se a confirmação de e-mail estiver ativada no Supabase, confirme o e-mail antes de entrar.";
+
+        return;
+
+    }
+
+
+    currentPlayer=
+        data.user;
+
+
+    currentUsername=
+        username;
+
+
+    await finishLogin();
+
+}
+
+
+/* ============================================================
+   FINALIZAR LOGIN
+============================================================ */
+
+async function finishLogin(){
+
+    accountMessage.textContent="";
+
+
+    menuUser.textContent=
+        "👤 "+
+        currentUsername;
+
+
+    accountScreen.classList.add(
+        "hidden"
+    );
+
+
+    menuScreen.classList.remove(
+        "hidden"
+    );
+
+
+    await loadPlayerWorld();
+
+
+    startAutosave();
+
+}
+
+
+/* ============================================================
+   LOGOUT
+============================================================ */
+
+async function logout(){
+
+    if(
+        gameRunning &&
+        currentPlayer
+    ){
+
+        await savePlayerWorld();
+
+    }
+
+
+    gameRunning=false;
+
+    gamePaused=false;
+
+
+    await supabaseClient
+        .auth
+        .signOut();
+
+
+    currentPlayer=null;
+
+    currentUsername="";
+
+
+    accountScreen.classList.remove(
+        "hidden"
+    );
+
+
+    menuScreen.classList.add(
+        "hidden"
+    );
+
+
+    worldScreen.classList.add(
+        "hidden"
+    );
+
+
+    gameScreen.classList.add(
+        "hidden"
+    );
+
+
+    usernameInput.value="";
+
+    passwordInput.value="";
+
+    confirmPasswordInput.value="";
+
+    accountMessage.textContent="";
+
+}
+
+
+/* ============================================================
+   EVENTOS
+============================================================ */
+
+loginTab.addEventListener(
+    "click",
+    ()=>{
+        setAccountMode("login");
+    }
+);
+
+
+registerTab.addEventListener(
+    "click",
+    ()=>{
+        setAccountMode("register");
+    }
+);
+
+
+accountAction.addEventListener(
+    "click",
+    ()=>{
+
+        if(
+            accountMode==="login"
+        ){
+
+            login();
+
+        }else{
+
+            register();
+
+        }
+
+    }
+);
+
+
+passwordInput.addEventListener(
+    "keydown",
+    event=>{
+
+        if(
+            event.key==="Enter"
+        ){
+
+            accountAction.click();
+
+        }
+
+    }
+);
+
+
+document.getElementById(
+    "playButton"
+).addEventListener(
+    "click",
+    ()=>{
+
+        worldScreen.classList.remove(
+            "hidden"
+        );
+
+        menuScreen.classList.add(
+            "hidden"
+        );
+
+    }
+);
+
+
+document.getElementById(
+    "worldInfoButton"
+).addEventListener(
+    "click",
+    ()=>{
+
+        worldScreen.classList.remove(
+            "hidden"
+        );
+
+        menuScreen.classList.add(
+            "hidden"
+        );
+
+    }
+);
+
+
+document.getElementById(
+    "worldBackButton"
+).addEventListener(
+    "click",
+    ()=>{
+
+        worldScreen.classList.add(
+            "hidden"
+        );
+
+        menuScreen.classList.remove(
+            "hidden"
+        );
+
+    }
+);
+
+
+document.getElementById(
+    "worldPlayButton"
+).addEventListener(
+    "click",
+    async()=>{
+
+        await startGame();
+
+    }
+);
+
+
+document.getElementById(
+    "logoutButton"
+).addEventListener(
+    "click",
+    logout
+);
+
+
+document.getElementById(
+    "resumeButton"
+).addEventListener(
+    "click",
+    ()=>{
+
+        togglePause();
+
+    }
+);
+
+
+document.getElementById(
+    "savePauseButton"
+).addEventListener(
+    "click",
+    async()=>{
+
+        await savePlayerWorld();
+
+    }
+);
+
+
+document.getElementById(
+    "pauseMenuButton"
+).addEventListener(
+    "click",
+    returnToMenu
+);
+
+
+/* ============================================================
+   TECLADO
+============================================================ */
+
+window.addEventListener(
+    "keydown",
+    event=>{
+
+        const key=
+            event.key.toLowerCase();
+
+
+        if(
+            [
+                "arrowleft",
+                "arrowright",
+                "arrowup",
+                "arrowdown",
+                " "
+            ].includes(key)
+        ){
+
+            event.preventDefault();
+
+        }
+
+
+        if(
+            key===" "
+        ){
+
+            if(
+                !event.repeat
+            ){
+
+                keys[key]=true;
+
+            }
+
+        }else{
+
+            keys[key]=true;
+
+        }
+
+
+        if(
+            key==="escape" &&
+            gameRunning
+        ){
+
+            togglePause();
+
+            return;
+
+        }
+
+
+        if(
+            key>="1" &&
+            key<="9"
+        ){
+
+            const requestedSlot=
+                Number(key)-1;
+
+            if(
+                hotbar[requestedSlot]
+            ){
+
+                selectedSlot=requestedSlot;
+
+                updateHotbar();
+
+            }
+
+        }
+
+    }
+);
+
+
+window.addEventListener(
+    "keyup",
+    event=>{
+
+        keys[
+            event.key.toLowerCase()
+        ]=false;
+
+    }
+);
+
+
+/* ============================================================
+   MOUSE
+============================================================ */
+
+canvas.addEventListener(
+    "mousemove",
+    event=>{
+
+        const rect=
+            canvas.getBoundingClientRect();
+
+        mouseBlock.x=
+            Math.floor(
+                (
+                    event.clientX-
+                    rect.left+
+                    cameraX
+                )/
+                TILE_SIZE
+            );
+
+        mouseBlock.y=
+            Math.floor(
+                (
+                    event.clientY-
+                    rect.top+
+                    cameraY
+                )/
+                TILE_SIZE
+            );
+
+        mouseBlock.active=true;
+
+    }
+);
+
+canvas.addEventListener(
+    "mouseleave",
+    ()=>{
+        mouseBlock.active=false;
+    }
+);
+
+canvas.addEventListener(
+    "mousedown",
+    handleCanvasClick
+);
+
+
+/* ============================================================
+   RESIZE
+============================================================ */
+
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
+
+
+/* ============================================================
+   VISIBILIDADE
+============================================================ */
+
+document.addEventListener(
+    "visibilitychange",
+    ()=>{
+
+        if(
+            document.visibilityState==="hidden" &&
+            currentPlayer &&
+            gameRunning
+        ){
+
+            savePlayerWorld();
+
+        }
+
+    }
+);
+
+
+/* ============================================================
+   INICIALIZAÇÃO
+============================================================ */
+
+async function initialize(){
+
+    resizeCanvas();
+
+    updateHotbar();
+
+    setAccountMode("login");
+
+    initializeWeather();
+
+
+    try{
+
+        const {
+            data,
+            error
+        }=
+            await supabaseClient
+                .auth
+                .getSession();
+
+
+        if(error){
+
+            console.error(
+                "ERRO AO RECUPERAR SESSÃO:",
+                error
+            );
+
+        }
+
+
+        if(
+            data &&
+            data.session &&
+            data.session.user
+        ){
+
+            currentPlayer=
+                data.session.user;
+
+
+            currentUsername=
+                currentPlayer
+                    .user_metadata
+                    ?.username||
+                currentPlayer
+                    .email
+                    ?.split("@")[0]||
+                "jogador";
+
+
+            await finishLogin();
+
+        }else{
+
+            accountScreen.classList.remove(
+                "hidden"
+            );
+
+        }
+
+    }catch(error){
+
+        console.error(
+            "ERRO NA INICIALIZAÇÃO:",
+            error
+        );
+
+
+        accountScreen.classList.remove(
+            "hidden"
+        );
+
+    }
+
+
+    loading.classList.add(
+        "hidden"
+    );
+
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
+
+initialize();
+
+</script>
+
+</body>
+</html>
