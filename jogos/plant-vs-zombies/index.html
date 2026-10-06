@@ -1,0 +1,2945 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ludix - Defesa das Plantas</title>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#10251a,#183d25);
+    color:white;
+    text-align:center;
+}
+
+/* =========================
+   MENU / RANKING
+========================= */
+
+#mainMenu,
+#rankingScreen{
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    background:linear-gradient(135deg,#10251a,#183d25);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.menuCard{
+    width:min(500px,95vw);
+    max-height:90vh;
+    overflow:auto;
+    background:#162d1d;
+    border:3px solid #315b3b;
+    border-radius:18px;
+    padding:30px;
+    box-shadow:0 0 30px rgba(0,0,0,.5);
+}
+
+.menuCard h2{
+    margin:0 0 12px;
+    font-size:32px;
+}
+
+.menuCard p{
+    margin:10px 0 20px;
+}
+
+#playerNameInput{
+    width:100%;
+    padding:14px;
+    border:2px solid #5b9d61;
+    border-radius:10px;
+    background:#0d1d12;
+    color:white;
+    font-size:18px;
+    text-align:center;
+    outline:none;
+}
+
+#playerNameInput:focus{
+    border-color:#ffd83d;
+}
+
+.menuButton{
+    width:100%;
+    margin-top:12px;
+    padding:14px;
+    border:0;
+    border-radius:10px;
+    background:#49a84f;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.menuButton:hover{
+    background:#5abb60;
+    transform:scale(1.02);
+}
+
+.menuButton.ranking{
+    background:#315b3b;
+    border:2px solid #5b9d61;
+}
+
+.menuButton.ranking:hover{
+    background:#3c7047;
+}
+
+#menuMessage{
+    min-height:22px;
+    margin-top:12px;
+    font-weight:bold;
+}
+
+#rankingList{
+    margin:15px 0;
+    text-align:left;
+}
+
+.rankingRow{
+    display:grid;
+    grid-template-columns:45px 1fr 80px 100px;
+    gap:8px;
+    align-items:center;
+    background:#254d2d;
+    border:1px solid #5b9d61;
+    border-radius:9px;
+    padding:10px;
+    margin-bottom:7px;
+}
+
+.rankingHeader{
+    font-size:12px;
+    color:#b9d9bd;
+    font-weight:bold;
+}
+
+.rankingPosition{
+    font-weight:bold;
+    text-align:center;
+}
+
+.rankingName{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.rankingValue{
+    text-align:center;
+    font-weight:bold;
+}
+
+#rankingStatus{
+    min-height:24px;
+    font-weight:bold;
+}
+
+.noRanking{
+    text-align:center;
+    padding:20px;
+    background:#254d2d;
+    border-radius:10px;
+}
+
+@media(max-width:600px){
+
+    .menuCard{
+        padding:20px;
+    }
+
+    .menuCard h2{
+        font-size:26px;
+    }
+
+    .rankingRow{
+        grid-template-columns:35px 1fr 65px 80px;
+        font-size:13px;
+    }
+}
+
+/* =========================
+   JOGO ORIGINAL
+========================= */
+
+h1{
+    margin:15px 0 5px;
+}
+
+#hud{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin:10px;
+}
+
+.info{
+    background:#162d1d;
+    border:2px solid #315b3b;
+    border-radius:12px;
+    padding:10px 15px;
+    font-weight:bold;
+}
+
+#plants{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:7px;
+    margin:10px auto;
+    max-width:1000px;
+}
+
+.plantBtn{
+    width:78px;
+    min-height:78px;
+    background:#254d2d;
+    border:2px solid #5b9d61;
+    border-radius:10px;
+    color:white;
+    cursor:pointer;
+    font-size:27px;
+}
+
+.plantBtn:hover{
+    background:#31663b;
+    transform:scale(1.04);
+}
+
+.plantBtn.selected{
+    border:3px solid #ffd83d;
+    box-shadow:0 0 12px #ffd83d;
+}
+
+.cost{
+    display:block;
+    font-size:12px;
+    margin-top:3px;
+}
+
+#game{
+    position:relative;
+    width:min(1100px,96vw);
+    height:500px;
+    margin:15px auto;
+    border:5px solid #315b3b;
+    border-radius:15px;
+    overflow:hidden;
+    background:#356b38;
+}
+
+.row{
+    position:absolute;
+    left:0;
+    width:100%;
+    height:20%;
+    border-bottom:2px solid rgba(255,255,255,.18);
+    pointer-events:none;
+}
+
+.cell{
+    position:absolute;
+    height:20%;
+    width:11.111%;
+    border-right:1px solid rgba(255,255,255,.12);
+    z-index:1;
+}
+
+.plant{
+    position:absolute;
+    width:10%;
+    height:17%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:38px;
+    cursor:pointer;
+    border-radius:12px;
+    background:rgba(0,0,0,.12);
+    z-index:10;
+    user-select:none;
+}
+
+.plant:hover{
+    background:rgba(255,80,80,.25);
+}
+
+.health{
+    position:absolute;
+    top:2px;
+    left:10%;
+    width:80%;
+    height:6px;
+    background:#222;
+    border-radius:5px;
+    overflow:hidden;
+}
+
+.healthBar{
+    width:100%;
+    height:100%;
+    background:#4cff57;
+}
+
+.zombie{
+    position:absolute;
+    width:8%;
+    height:18%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:38px;
+    z-index:8;
+    user-select:none;
+}
+
+.zombieHealth{
+    position:absolute;
+    top:0;
+    left:5%;
+    width:90%;
+    height:5px;
+    background:#222;
+    border-radius:5px;
+    overflow:hidden;
+}
+
+.zombieHealthBar{
+    width:100%;
+    height:100%;
+    background:#ff3333;
+}
+
+.projectile{
+    position:absolute;
+    width:15px;
+    height:15px;
+    border-radius:50%;
+    background:#b9ff45;
+    z-index:20;
+}
+
+.message{
+    margin:8px;
+    font-weight:bold;
+}
+
+#instructions{
+    margin:10px auto 20px;
+    max-width:900px;
+    background:rgba(0,0,0,.25);
+    padding:12px;
+    border-radius:10px;
+    line-height:1.5;
+}
+
+#gameOver{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.78);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    z-index:100;
+}
+
+#gameOver h2{
+    font-size:42px;
+    margin:10px;
+}
+
+#restart{
+    background:#49a84f;
+    color:white;
+    border:0;
+    padding:14px 25px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:18px;
+    font-weight:bold;
+}
+
+#rankingSaveStatus{
+    min-height:22px;
+    font-weight:bold;
+}
+
+#backToMenu{
+    margin-top:10px;
+    background:#315b3b;
+    color:white;
+    border:2px solid #5b9d61;
+    padding:12px 22px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+}
+
+@media(max-width:700px){
+
+    #game{
+        height:400px;
+    }
+
+    .plant{
+        font-size:25px;
+    }
+
+    .zombie{
+        font-size:28px;
+    }
+
+    .plantBtn{
+        width:65px;
+        min-height:70px;
+        font-size:23px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     MENU PRINCIPAL
+========================= -->
+
+<div id="mainMenu">
+
+    <div class="menuCard">
+
+        <h2>🌱 Defesa das Plantas 🧟</h2>
+
+        <p>Digite seu nome para entrar no jogo:</p>
+
+        <input
+            id="playerNameInput"
+            type="text"
+            maxlength="20"
+            placeholder="Seu nome"
+            autocomplete="off"
+        >
+
+        <button
+            id="startGameBtn"
+            class="menuButton"
+        >
+            ▶️ Jogar
+        </button>
+
+        <button
+            id="openRankingBtn"
+            class="menuButton ranking"
+        >
+            🏆 Ranking Global
+        </button>
+
+        <div id="menuMessage"></div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     RANKING GLOBAL
+========================= -->
+
+<div
+    id="rankingScreen"
+    style="display:none;"
+>
+
+    <div class="menuCard">
+
+        <h2>🏆 Ranking Global</h2>
+
+        <div id="rankingStatus">
+            Carregando ranking...
+        </div>
+
+        <div id="rankingList"></div>
+
+        <button
+            id="closeRankingBtn"
+            class="menuButton ranking"
+        >
+            ↩️ Voltar
+        </button>
+
+    </div>
+
+</div>
+
+
+<h1>🌱 Defesa das Plantas 🧟</h1>
+
+<div id="hud">
+
+    <div class="info">
+        ☀️ Sol:
+        <span id="sun">100</span>
+    </div>
+
+    <div class="info">
+        🏆 Pontos:
+        <span id="score">0</span>
+    </div>
+
+    <div class="info">
+        🌊 Onda:
+        <span id="wave">1</span>
+    </div>
+
+    <div class="info">
+        🏆 Recorde:
+        <span id="record">0</span>
+    </div>
+
+</div>
+
+
+<div id="plants"></div>
+<div id="healInfo" class="message">💚 Clique com o botão direito em uma planta para curá-la por ☀️ 25.</div>
+
+
+<div id="game">
+
+    <div
+        class="row"
+        style="top:0%"
+    ></div>
+
+    <div
+        class="row"
+        style="top:20%"
+    ></div>
+
+    <div
+        class="row"
+        style="top:40%"
+    ></div>
+
+    <div
+        class="row"
+        style="top:60%"
+    ></div>
+
+    <div
+        class="row"
+        style="top:80%"
+    ></div>
+
+
+    <div id="gameOver">
+
+        <h2>
+            💀 A casa foi destruída!
+        </h2>
+
+        <p>
+            Jogador:
+            <span id="finalPlayerName">---</span>
+        </p>
+
+        <p>
+            Pontuação:
+            <span id="finalScore">0</span>
+        </p>
+
+        <p>
+            🌊 Onda:
+            <span id="finalWave">1</span>
+        </p>
+
+        <p>
+            ☀️ Sóis acumulados:
+            <span id="finalSuns">0</span>
+        </p>
+
+        <p id="rankingSaveStatus">
+            Salvando resultado...
+        </p>
+
+        <button id="restart">
+            Jogar novamente
+        </button>
+
+        <button id="backToMenu">
+            ↩️ Voltar ao menu
+        </button>
+
+    </div>
+
+</div>
+
+
+<div
+    class="message"
+    id="message"
+>
+    Escolha uma planta e clique em um espaço vazio.
+</div>
+
+
+<div id="instructions">
+
+    🌱 Escolha uma planta e clique em um dos 45 espaços.<br>
+
+    ☀️ O sol vem apenas dos zumbis derrotados e dos girassóis.<br>
+
+    🖱️ Clique em uma planta para removê-la e recuperar metade do custo.<br>
+
+    ⚠️ A partir da onda 5, os zumbis aparecem 2× mais rápido.<br>
+    💚 Clique com o botão direito em uma planta para recuperar parte da vida.
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+    "https://vkswxahmirkhcynwlzys.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_pGNNupmDtxbXRgs01aZdeg_6dJqw4Kc";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+const mainMenu =
+    document.getElementById("mainMenu");
+
+const rankingScreen =
+    document.getElementById("rankingScreen");
+
+const playerNameInput =
+    document.getElementById("playerNameInput");
+
+const startGameBtn =
+    document.getElementById("startGameBtn");
+
+const openRankingBtn =
+    document.getElementById("openRankingBtn");
+
+const closeRankingBtn =
+    document.getElementById("closeRankingBtn");
+
+const menuMessage =
+    document.getElementById("menuMessage");
+
+const rankingStatus =
+    document.getElementById("rankingStatus");
+
+const rankingList =
+    document.getElementById("rankingList");
+
+const game =
+    document.getElementById("game");
+
+const plantsDiv =
+    document.getElementById("plants");
+
+const sunEl =
+    document.getElementById("sun");
+
+const scoreEl =
+    document.getElementById("score");
+
+const waveEl =
+    document.getElementById("wave");
+
+const recordEl =
+    document.getElementById("record");
+
+const message =
+    document.getElementById("message");
+
+const gameOverScreen =
+    document.getElementById("gameOver");
+
+const finalScore =
+    document.getElementById("finalScore");
+
+const finalWave =
+    document.getElementById("finalWave");
+
+const finalSuns =
+    document.getElementById("finalSuns");
+
+const finalPlayerName =
+    document.getElementById("finalPlayerName");
+
+const rankingSaveStatus =
+    document.getElementById("rankingSaveStatus");
+
+const restartBtn =
+    document.getElementById("restart");
+
+const backToMenu =
+    document.getElementById("backToMenu");
+
+
+/* =========================================================
+   VARIÁVEIS DO JOGO
+========================================================= */
+
+let sun = 100;
+
+let score = 0;
+
+let wave = 1;
+
+/*
+   Guarda todos os sóis ganhos durante a partida.
+
+   Diferente de "sun", esse valor NÃO diminui
+   quando o jogador compra plantas.
+*/
+let accumulatedSuns = 0;
+
+let playerName = "";
+
+let selectedPlant = null;
+
+let plants = [];
+
+let zombies = [];
+
+let projectiles = [];
+
+/*
+   O jogo começa parado no menu.
+*/
+let gameRunning = false;
+
+let gameStarted = false;
+
+let scoreSaved = false;
+
+let lastTime = performance.now();
+
+let zombieSpawnTimer = 0;
+
+let extraSpawnTimer = 0;
+
+
+let record =
+    Number(
+        localStorage.getItem(
+            "ludixPvZRecord"
+        )
+    ) || 0;
+
+recordEl.textContent = record;
+
+
+/* =========================================================
+   PLANTAS
+========================================================= */
+
+const plantData = {
+
+    shooter:{
+        name:"Atirador",
+        icon:"🌱",
+        cost:50,
+        health:230,
+        damage:34,
+        cooldown:950
+    },
+
+    sunflower:{
+        name:"Girassol",
+        icon:"🌻",
+        cost:75,
+        health:210,
+        production:25,
+        cooldown:6500
+    },
+
+    wall:{
+        name:"Muralha",
+        icon:"🪨",
+        cost:75,
+        health:900
+    },
+
+    fire:{
+        name:"Fogo",
+        icon:"🔥",
+        cost:100,
+        health:280,
+        damage:70,
+        cooldown:1250
+    },
+
+    cactus:{
+        name:"Cacto",
+        icon:"🌵",
+        cost:75,
+        health:250,
+        damage:22,
+        cooldown:480
+    },
+
+    ice:{
+        name:"Gelo",
+        icon:"❄️",
+        cost:100,
+        health:240,
+        damage:25,
+        cooldown:1100
+    },
+
+    bomb:{
+        name:"Bomba",
+        icon:"💣",
+        cost:125,
+        health:210,
+        damage:200,
+        cooldown:2800
+    },
+
+    mushroom:{
+        name:"Cogumelo",
+        icon:"🍄",
+        cost:100,
+        health:220,
+        damage:52,
+        cooldown:800
+    },
+
+    electric:{
+        name:"Elétrico",
+        icon:"⚡",
+        cost:150,
+        health:230,
+        damage:42,
+        cooldown:1400
+    },
+
+    corn:{
+        name:"Milho",
+        icon:"🌽",
+        cost:125,
+        health:250,
+        damage:58,
+        cooldown:1050
+    },
+
+    healer:{
+        name:"Curadora",
+        icon:"💚",
+        cost:125,
+        health:240,
+        healing:35,
+        cooldown:4500
+    },
+
+    cannon:{
+        name:"Canhão",
+        icon:"💥",
+        cost:175,
+        health:300,
+        damage:105,
+        cooldown:1800
+    },
+
+    thorn:{
+        name:"Espinhos",
+        icon:"🌿",
+        cost:90,
+        health:320,
+        damage:28,
+        cooldown:650
+    },
+
+    iceFire:{
+        name:"Gelo Forte",
+        icon:"🧊",
+        cost:175,
+        health:270,
+        damage:75,
+        cooldown:1500
+    }
+
+};
+
+
+/* =========================================================
+   ZUMBIS
+========================================================= */
+
+const zombieData = {
+
+    normal:{
+        icon:"🧟",
+        health:150,
+        speed:0.0028,
+        damage:0.10,
+        points:25,
+        sun:20
+    },
+
+    fast:{
+        icon:"🧟‍♂️",
+        health:120,
+        speed:0.0045,
+        damage:0.08,
+        points:40,
+        sun:25
+    },
+
+    tank:{
+        icon:"🪣",
+        health:550,
+        speed:0.0020,
+        damage:0.17,
+        points:80,
+        sun:45
+    },
+
+    runner:{
+        icon:"🦇",
+        health:140,
+        speed:0.0065,
+        damage:0.10,
+        points:60,
+        sun:50
+    },
+
+    armored:{
+        icon:"🛡️",
+        health:800,
+        speed:0.0022,
+        damage:0.23,
+        points:120,
+        sun:30
+    },
+
+    giant:{
+        icon:"👾",
+        health:1300,
+        speed:0.0015,
+        damage:0.34,
+        points:180,
+        sun:40
+    },
+
+    poison:{
+        icon:"☠️",
+        health:700,
+        speed:0.0026,
+        damage:0.20,
+        points:150,
+        sun:35
+    },
+
+    boss:{
+        icon:"👹",
+        health:2200,
+        speed:0.0017,
+        damage:0.40,
+        points:300,
+        sun:55
+    }
+
+};
+
+
+/* =========================================================
+   BOTÕES DAS PLANTAS
+========================================================= */
+
+for(const type in plantData){
+
+    const data =
+        plantData[type];
+
+    const button =
+        document.createElement("button");
+
+    button.className =
+        "plantBtn";
+
+    button.innerHTML =
+        `${data.icon}
+        <span class="cost">
+            ☀️ ${data.cost}
+        </span>`;
+
+    button.onclick = () => {
+
+        if(!gameRunning)
+            return;
+
+        document
+            .querySelectorAll(".plantBtn")
+            .forEach(
+                b =>
+                b.classList.remove(
+                    "selected"
+                )
+            );
+
+        button.classList.add(
+            "selected"
+        );
+
+        selectedPlant =
+            type;
+
+        message.textContent =
+            `Selecionado: ${data.name}. Clique em um espaço vazio.`;
+
+    };
+
+    plantsDiv.appendChild(button);
+}
+
+
+/* =========================================================
+   GRADE
+========================================================= */
+
+for(let row=0; row<5; row++){
+
+    for(let col=0; col<9; col++){
+
+        const cell =
+            document.createElement("div");
+
+        cell.className =
+            "cell";
+
+        cell.style.left =
+            `${col * 11.111}%`;
+
+        cell.style.top =
+            `${row * 20}%`;
+
+        cell.dataset.row =
+            row;
+
+        cell.dataset.col =
+            col;
+
+        cell.onclick =
+            function(e){
+
+                e.stopPropagation();
+
+                if(!gameRunning)
+                    return;
+
+                if(!selectedPlant){
+
+                    message.textContent =
+                        "🌱 Primeiro escolha uma planta.";
+
+                    return;
+                }
+
+                const already =
+                    plants.find(
+                        p =>
+                        p.row === row &&
+                        p.col === col
+                    );
+
+                if(already){
+
+                    message.textContent =
+                        "⚠️ Esse espaço já possui uma planta.";
+
+                    return;
+                }
+
+                const data =
+                    plantData[
+                        selectedPlant
+                    ];
+
+                if(
+                    sun <
+                    data.cost
+                ){
+
+                    message.textContent =
+                        "☀️ Você não tem sol suficiente.";
+
+                    return;
+                }
+
+                sun -=
+                    data.cost;
+
+                createPlant(
+                    selectedPlant,
+                    row,
+                    col
+                );
+
+                updateHUD();
+
+            };
+
+        game.appendChild(cell);
+    }
+}
+
+
+/* =========================================================
+   CRIAR PLANTA
+========================================================= */
+
+function createPlant(
+    type,
+    row,
+    col
+){
+
+    const data =
+        plantData[type];
+
+    const el =
+        document.createElement("div");
+
+    el.className =
+        "plant";
+
+    el.style.left =
+        `${col * 11.111 + 0.55}%`;
+
+    el.style.top =
+        `${row * 20 + 1.5}%`;
+
+    el.innerHTML =
+        `${data.icon}
+        <div class="health">
+            <div class="healthBar"></div>
+        </div>`;
+
+    game.appendChild(el);
+
+    const plant = {
+
+        type:type,
+
+        row:row,
+
+        col:col,
+
+        health:data.health,
+
+        maxHealth:data.health,
+
+        element:el,
+
+        lastAction:
+            performance.now()
+
+    };
+
+    el.onclick =
+        function(e){
+
+            e.stopPropagation();
+
+            removePlant(
+                plant
+            );
+
+        };
+
+    el.oncontextmenu =
+        function(e){
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const healCost = 25;
+            const healAmount = 100;
+
+            if(plant.health >= plant.maxHealth){
+                message.textContent =
+                    "💚 Essa planta já está com a vida cheia.";
+                return;
+            }
+
+            if(sun < healCost){
+                message.textContent =
+                    "☀️ Você precisa de 25 sóis para recuperar a vida.";
+                return;
+            }
+
+            sun -= healCost;
+
+            healPlant(
+                plant,
+                healAmount
+            );
+
+            message.textContent =
+                `💚 ${data.name} recuperou vida! -${healCost} ☀️`;
+
+            updateHUD();
+        };
+
+    plants.push(
+        plant
+    );
+
+}
+
+
+/* =========================================================
+   REMOVER PLANTA
+========================================================= */
+
+function removePlant(
+    plant
+){
+
+    if(!plant.element)
+        return;
+
+    const data =
+        plantData[
+            plant.type
+        ];
+
+    const refund =
+        Math.floor(
+            data.cost / 2
+        );
+
+    sun +=
+        refund;
+
+    /*
+       O reembolso também é um ganho
+       de sol durante a partida.
+    */
+    accumulatedSuns +=
+        refund;
+
+    plant.element.remove();
+
+    plants =
+        plants.filter(
+            p =>
+            p !== plant
+        );
+
+    message.textContent =
+        `🗑️ ${data.name} removida. +${refund} ☀️`;
+
+    updateHUD();
+
+}
+
+
+/* =========================================================
+   ESCOLHER ZUMBI
+========================================================= */
+
+function chooseZombieType(){
+
+    const r =
+        Math.random();
+
+    if(wave === 1)
+        return "normal";
+
+    if(wave === 2)
+        return r < 0.30
+            ? "fast"
+            : "normal";
+
+    if(wave === 3){
+
+        if(r < 0.15)
+            return "tank";
+
+        if(r < 0.40)
+            return "fast";
+
+        return "normal";
+    }
+
+    if(wave === 4){
+
+        if(r < 0.15)
+            return "runner";
+
+        if(r < 0.30)
+            return "tank";
+
+        if(r < 0.55)
+            return "fast";
+
+        return "normal";
+    }
+
+    if(wave === 5){
+
+        if(r < 0.10)
+            return "armored";
+
+        if(r < 0.25)
+            return "runner";
+
+        if(r < 0.40)
+            return "tank";
+
+        if(r < 0.65)
+            return "fast";
+
+        return "normal";
+    }
+
+    if(wave === 6){
+
+        if(r < 0.08)
+            return "giant";
+
+        if(r < 0.18)
+            return "armored";
+
+        if(r < 0.33)
+            return "runner";
+
+        if(r < 0.48)
+            return "tank";
+
+        if(r < 0.70)
+            return "fast";
+
+        return "normal";
+    }
+
+    if(r < 0.06)
+        return "boss";
+
+    if(r < 0.15)
+        return "giant";
+
+    if(r < 0.25)
+        return "poison";
+
+    if(r < 0.40)
+        return "armored";
+
+    if(r < 0.55)
+        return "runner";
+
+    if(r < 0.68)
+        return "tank";
+
+    if(r < 0.82)
+        return "fast";
+
+    return "normal";
+
+}
+
+
+/* =========================================================
+   CRIAR ZUMBI
+========================================================= */
+
+function spawnZombie(
+    type
+){
+
+    const data =
+        zombieData[type];
+
+    const row =
+        Math.floor(
+            Math.random() * 5
+        );
+
+    const healthMultiplier =
+        wave === 1
+        ? 1
+        : 1 + (wave - 1) * 0.18;
+
+    const maxHealth =
+        Math.floor(
+            data.health *
+            healthMultiplier
+        );
+
+    const el =
+        document.createElement("div");
+
+    el.className =
+        "zombie";
+
+    el.style.left =
+        "91%";
+
+    el.style.top =
+        `${row * 20 + 1}%`;
+
+    el.innerHTML =
+        `${data.icon}
+        <div class="zombieHealth">
+            <div class="zombieHealthBar"></div>
+        </div>`;
+
+    game.appendChild(el);
+
+    zombies.push({
+
+        type:type,
+
+        row:row,
+
+        x:91,
+
+        health:maxHealth,
+
+        maxHealth:maxHealth,
+
+        speed:data.speed,
+
+        damage:data.damage,
+
+        slowTimer:0,
+
+        element:el
+
+    });
+
+}
+
+
+/* =========================================================
+   PRODUÇÃO DE SOL
+========================================================= */
+
+function produceSun(
+    plant
+){
+
+    const data =
+        plantData[
+            plant.type
+        ];
+
+    if(
+        plant.type !==
+        "sunflower"
+    )
+        return;
+
+    if(
+        performance.now() -
+        plant.lastAction >=
+        data.cooldown
+    ){
+
+        sun +=
+            data.production;
+
+        /*
+           Registra o total de sóis
+           produzidos durante a partida.
+        */
+        accumulatedSuns +=
+            data.production;
+
+        plant.lastAction =
+            performance.now();
+
+        updateHUD();
+
+    }
+
+}
+
+
+/* =========================================================
+   PLANTAS ATACAM
+========================================================= */
+
+function healPlant(plant, amount){
+
+    if(!plants.includes(plant))
+        return;
+
+    plant.health =
+        Math.min(
+            plant.maxHealth,
+            plant.health + amount
+        );
+
+    const healthBar =
+        plant.element.querySelector(".healthBar");
+
+    healthBar.style.width =
+        `${Math.max(
+            0,
+            plant.health / plant.maxHealth * 100
+        )}%`;
+}
+
+
+function updateHealers(){
+
+    for(const plant of plants){
+
+        const data = plantData[plant.type];
+
+        if(
+            plant.type !== "healer" ||
+            !data.healing
+        )
+            continue;
+
+        if(
+            performance.now() -
+            plant.lastAction <
+            data.cooldown
+        )
+            continue;
+
+        const allies = plants.filter(
+            p =>
+                p !== plant &&
+                p.row === plant.row &&
+                p.health < p.maxHealth
+        );
+
+        for(const ally of allies){
+            healPlant(
+                ally,
+                data.healing
+            );
+        }
+
+        plant.lastAction =
+            performance.now();
+    }
+}
+
+
+function updatePlants(){
+
+    for(
+        const plant
+        of plants
+    ){
+
+        const data =
+            plantData[
+                plant.type
+            ];
+
+        produceSun(
+            plant
+        );
+
+        if(
+            plant.type === "healer"
+        )
+            continue;
+
+        if(!data.damage)
+            continue;
+
+        if(
+            performance.now() -
+            plant.lastAction <
+            data.cooldown
+        )
+            continue;
+
+        const target =
+            zombies.find(
+                z =>
+                z.row === plant.row &&
+                z.x >
+                plant.col * 11
+            );
+
+        if(!target)
+            continue;
+
+        if(
+            plant.type ===
+            "bomb"
+        ){
+
+            bombAttack(
+                plant
+            );
+
+        }else if(
+            plant.type ===
+            "electric"
+        ){
+
+            electricAttack(
+                plant
+            );
+
+        }else{
+
+            shoot(
+                plant
+            );
+
+        }
+
+        plant.lastAction =
+            performance.now();
+
+    }
+
+}
+
+
+/* =========================================================
+   ATIRAR
+========================================================= */
+
+function shoot(
+    plant
+){
+
+    const data =
+        plantData[
+            plant.type
+        ];
+
+    const projectile =
+        document.createElement(
+            "div"
+        );
+
+    projectile.className =
+        "projectile";
+
+    projectile.style.left =
+        `${plant.col * 11.111 + 8}%`;
+
+    projectile.style.top =
+        `${plant.row * 20 + 8}%`;
+
+    if(
+        plant.type ===
+        "fire"
+    )
+        projectile.style.background =
+            "#ff7b00";
+
+    if(
+        plant.type ===
+        "ice"
+    )
+        projectile.style.background =
+            "#80eaff";
+
+    if(
+        plant.type ===
+        "electric"
+    )
+        projectile.style.background =
+            "#ffff00";
+
+    if(
+        plant.type ===
+        "corn"
+    )
+        projectile.style.background =
+            "#ffd43b";
+
+    game.appendChild(
+        projectile
+    );
+
+    projectiles.push({
+
+        element:projectile,
+
+        x:
+            plant.col *
+            11.111 + 8,
+
+        row:
+            plant.row,
+
+        damage:
+            data.damage,
+
+        type:
+            plant.type
+
+    });
+
+}
+
+
+/* =========================================================
+   BOMBA
+========================================================= */
+
+function bombAttack(
+    plant
+){
+
+    const target =
+        zombies.find(
+            z =>
+            z.row === plant.row &&
+            z.x >
+            plant.col * 11
+        );
+
+    if(!target)
+        return;
+
+    for(
+        const z
+        of [...zombies]
+    ){
+
+        if(
+            z.row ===
+            target.row &&
+            Math.abs(
+                z.x -
+                target.x
+            ) < 15
+        ){
+
+            damageZombie(
+                z,
+                plantData.bomb.damage
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   ELÉTRICO
+========================================================= */
+
+function electricAttack(
+    plant
+){
+
+    for(
+        const z
+        of [...zombies]
+    ){
+
+        if(
+            z.row === plant.row &&
+            z.x >
+            plant.col * 10
+        ){
+
+            damageZombie(
+                z,
+                plantData.electric.damage
+            );
+
+            break;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   PROJÉTEIS
+========================================================= */
+
+function updateProjectiles(){
+
+    for(
+        let i =
+        projectiles.length - 1;
+
+        i >= 0;
+
+        i--
+    ){
+
+        const p =
+            projectiles[i];
+
+        p.x +=
+            0.8;
+
+        p.element.style.left =
+            `${p.x}%`;
+
+        let hit =
+            null;
+
+        for(
+            const z
+            of zombies
+        ){
+
+            if(
+                z.row === p.row &&
+                Math.abs(
+                    z.x -
+                    p.x
+                ) < 4
+            ){
+
+                hit =
+                    z;
+
+                break;
+
+            }
+
+        }
+
+        if(hit){
+
+            damageZombie(
+                hit,
+                p.damage
+            );
+
+            if(
+                p.type ===
+                "ice"
+            )
+                hit.slowTimer =
+                    3500;
+
+            p.element.remove();
+
+            projectiles.splice(
+                i,
+                1
+            );
+
+            continue;
+        }
+
+        if(p.x > 100){
+
+            p.element.remove();
+
+            projectiles.splice(
+                i,
+                1
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   DANO
+========================================================= */
+
+function damageZombie(
+    zombie,
+    damage
+){
+
+    if(
+        !zombies.includes(
+            zombie
+        )
+    )
+        return;
+
+    zombie.health -=
+        damage;
+
+    if(
+        zombie.health <= 0
+    ){
+
+        killZombie(
+            zombie
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MATAR ZUMBI
+========================================================= */
+
+function killZombie(
+    zombie
+){
+
+    if(
+        !zombies.includes(
+            zombie
+        )
+    )
+        return;
+
+    const data =
+        zombieData[
+            zombie.type
+        ];
+
+    score +=
+        data.points;
+
+    const sunReward =
+        Math.max(
+            5,
+            Math.floor(
+                data.sun /
+                Math.max(
+                    1,
+                    wave * 0.35
+                )
+            )
+        );
+
+    sun +=
+        sunReward;
+
+    /*
+       Registra o total acumulado.
+    */
+    accumulatedSuns +=
+        sunReward;
+
+    zombie.element.remove();
+
+    zombies =
+        zombies.filter(
+            z =>
+            z !== zombie
+        );
+
+    updateHUD();
+
+}
+
+
+/* =========================================================
+   ZUMBIS ANDAM
+========================================================= */
+
+function updateZombies(
+    delta
+){
+
+    for(
+        const zombie
+        of [...zombies]
+    ){
+
+        let speed =
+            zombie.speed;
+
+        if(
+            zombie.slowTimer > 0
+        ){
+
+            zombie.slowTimer -=
+                delta;
+
+            speed *=
+                0.45;
+
+        }
+
+        const col =
+            Math.floor(
+                zombie.x /
+                11.111
+            );
+
+        const plant =
+            plants.find(
+                p =>
+                p.row ===
+                zombie.row &&
+                p.col ===
+                col
+            );
+
+        if(plant){
+
+            const data =
+                zombieData[
+                    zombie.type
+                ];
+
+            plant.health -=
+                data.damage *
+                (delta / 16);
+
+            const healthBar =
+                plant.element.querySelector(
+                    ".healthBar"
+                );
+
+            healthBar.style.width =
+                `${Math.max(
+                    0,
+                    plant.health /
+                    plant.maxHealth *
+                    100
+                )}%`;
+
+            if(
+                plant.health <= 0
+            ){
+
+                plant.element.remove();
+
+                plants =
+                    plants.filter(
+                        p =>
+                        p !== plant
+                    );
+
+            }
+
+        }else{
+
+            zombie.x -=
+                speed *
+                delta;
+
+            zombie.element.style.left =
+                `${zombie.x}%`;
+
+        }
+
+        if(
+            zombie.x <= 0
+        ){
+
+            endGame();
+
+            return;
+
+        }
+
+        const bar =
+            zombie.element.querySelector(
+                ".zombieHealthBar"
+            );
+
+        bar.style.width =
+            `${Math.max(
+                0,
+                zombie.health /
+                zombie.maxHealth *
+                100
+            )}%`;
+
+    }
+
+}
+
+
+/* =========================================================
+   VELOCIDADE DOS ZUMBIS
+========================================================= */
+
+function spawnRate(){
+
+    let interval =
+        Math.max(
+            3000,
+            6500 -
+            wave * 180
+        );
+
+    /*
+       A partir da onda 5:
+       2 vezes mais zumbis.
+    */
+
+    if(
+        wave >= 5
+    ){
+
+        interval /=
+            2;
+
+    }
+
+    return interval;
+
+}
+
+
+/* =========================================================
+   ONDAS
+========================================================= */
+
+function updateWave(){
+
+    const newWave =
+        Math.floor(
+            score / 300
+        ) + 1;
+
+    if(
+        newWave !== wave
+    ){
+
+        wave =
+            newWave;
+
+        if(
+            wave >= 5
+        ){
+
+            message.textContent =
+                `🌊 ONDA ${wave}! ⚠️ ` +
+                `Produção de zumbis 2× maior!`;
+
+        }else{
+
+            message.textContent =
+                `🌊 Onda ${wave}! Os zumbis ficaram mais fortes!`;
+
+        }
+
+        updateHUD();
+
+    }
+
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+function updateHUD(){
+
+    sunEl.textContent =
+        Math.floor(
+            sun
+        );
+
+    scoreEl.textContent =
+        score;
+
+    waveEl.textContent =
+        wave;
+
+    recordEl.textContent =
+        record;
+
+}
+
+
+/* =========================================================
+   SALVAR NO RANKING GLOBAL
+========================================================= */
+
+async function saveScoreToGlobalRanking(){
+
+    if(
+        scoreSaved
+    )
+        return;
+
+    scoreSaved =
+        true;
+
+    const cleanName =
+        playerName
+            .trim()
+            .substring(
+                0,
+                20
+            );
+
+    if(!cleanName){
+
+        rankingSaveStatus.textContent =
+            "⚠️ Nome inválido.";
+
+        return;
+
+    }
+
+    rankingSaveStatus.textContent =
+        "☁️ Salvando no ranking global...";
+
+    try{
+
+        const {
+            error
+        } =
+        await supabaseClient
+            .from(
+                "plants_vs_zombies_scores"
+            )
+            .insert({
+
+                player_name:
+                    cleanName,
+
+                wave:
+                    wave,
+
+                suns:
+                    accumulatedSuns
+
+            });
+
+        if(error){
+
+            console.error(
+                "Erro ao salvar ranking:",
+                error
+            );
+
+            rankingSaveStatus.textContent =
+                "⚠️ Não foi possível salvar no ranking.";
+
+            return;
+
+        }
+
+        rankingSaveStatus.textContent =
+            "✅ Resultado salvo no ranking global!";
+
+    }catch(error){
+
+        console.error(
+            error
+        );
+
+        rankingSaveStatus.textContent =
+            "⚠️ Erro de conexão com o ranking.";
+
+    }
+
+}
+
+
+/* =========================================================
+   CARREGAR RANKING
+========================================================= */
+
+async function loadRanking(){
+
+    rankingStatus.textContent =
+        "☁️ Carregando ranking global...";
+
+    rankingList.innerHTML =
+        "";
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient
+            .from(
+                "plants_vs_zombies_scores"
+            )
+            .select(
+                "player_name,wave,suns,created_at"
+            )
+            .order(
+                "wave",
+                {
+                    ascending:false
+                }
+            )
+            .order(
+                "suns",
+                {
+                    ascending:false
+                }
+            )
+            .limit(
+                100
+            );
+
+        if(error){
+
+            console.error(
+                "Erro no ranking:",
+                error
+            );
+
+            rankingStatus.textContent =
+                "⚠️ Não foi possível carregar o ranking.";
+
+            return;
+
+        }
+
+        if(
+            !data ||
+            data.length === 0
+        ){
+
+            rankingStatus.textContent =
+                "";
+
+            rankingList.innerHTML =
+                `<div class="noRanking">
+                    🏆 Ainda não existem jogadores no ranking.
+                </div>`;
+
+            return;
+
+        }
+
+        /*
+           Mantém somente a melhor partida
+           de cada jogador.
+        */
+
+        const bestByPlayer =
+            new Map();
+
+        for(
+            const item
+            of data
+        ){
+
+            const key =
+                item.player_name
+                    .trim()
+                    .toLowerCase();
+
+            if(
+                !bestByPlayer.has(
+                    key
+                )
+            ){
+
+                bestByPlayer.set(
+                    key,
+                    item
+                );
+
+            }else{
+
+                const current =
+                    bestByPlayer.get(
+                        key
+                    );
+
+                if(
+                    item.wave >
+                    current.wave
+                ){
+
+                    bestByPlayer.set(
+                        key,
+                        item
+                    );
+
+                }else if(
+                    item.wave ===
+                    current.wave &&
+                    item.suns >
+                    current.suns
+                ){
+
+                    bestByPlayer.set(
+                        key,
+                        item
+                    );
+
+                }
+
+            }
+
+        }
+
+        const ranking =
+            [...bestByPlayer.values()]
+                .sort(
+                    (a,b) => {
+
+                        if(
+                            b.wave !==
+                            a.wave
+                        ){
+
+                            return (
+                                b.wave -
+                                a.wave
+                            );
+
+                        }
+
+                        return (
+                            b.suns -
+                            a.suns
+                        );
+
+                    }
+                )
+                .slice(
+                    0,
+                    50
+                );
+
+        rankingStatus.textContent =
+            "🏆 Melhores resultados";
+
+        let html = "";
+
+        html += `
+            <div class="rankingRow rankingHeader">
+                <div>#</div>
+                <div>Jogador</div>
+                <div>Onda</div>
+                <div>☀️ Sóis</div>
+            </div>
+        `;
+
+        ranking.forEach(
+            (item,index) => {
+
+                html += `
+                    <div class="rankingRow">
+
+                        <div class="rankingPosition">
+                            ${index + 1}
+                        </div>
+
+                        <div class="rankingName">
+                            ${escapeHTML(
+                                item.player_name
+                            )}
+                        </div>
+
+                        <div class="rankingValue">
+                            🌊 ${item.wave}
+                        </div>
+
+                        <div class="rankingValue">
+                            ☀️ ${item.suns}
+                        </div>
+
+                    </div>
+                `;
+
+            }
+        );
+
+        rankingList.innerHTML =
+            html;
+
+    }catch(error){
+
+        console.error(
+            error
+        );
+
+        rankingStatus.textContent =
+            "⚠️ Erro ao conectar ao ranking.";
+
+    }
+
+}
+
+
+/* =========================================================
+   PROTEÇÃO CONTRA HTML NO NOME
+========================================================= */
+
+function escapeHTML(
+    text
+){
+
+    return String(text)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =========================================================
+   GAME OVER
+========================================================= */
+
+function endGame(){
+
+    if(
+        !gameRunning
+    )
+        return;
+
+    gameRunning =
+        false;
+
+    finalScore.textContent =
+        score;
+
+    finalWave.textContent =
+        wave;
+
+    finalSuns.textContent =
+        accumulatedSuns;
+
+    finalPlayerName.textContent =
+        playerName;
+
+    if(
+        score >
+        record
+    ){
+
+        record =
+            score;
+
+        localStorage.setItem(
+            "ludixPvZRecord",
+            record
+        );
+
+    }
+
+    updateHUD();
+
+    gameOverScreen.style.display =
+        "flex";
+
+    saveScoreToGlobalRanking();
+
+}
+
+
+/* =========================================================
+   COMEÇAR NOVA PARTIDA
+========================================================= */
+
+function startGame(){
+
+    const name =
+        playerNameInput.value
+            .trim();
+
+    if(!name){
+
+        menuMessage.textContent =
+            "⚠️ Digite seu nome antes de jogar.";
+
+        playerNameInput.focus();
+
+        return;
+
+    }
+
+    playerName =
+        name.substring(
+            0,
+            20
+        );
+
+    localStorage.setItem(
+        "ludixPvZPlayerName",
+        playerName
+    );
+
+    /*
+       Reinicia os valores da partida.
+    */
+
+    sun =
+        100;
+
+    score =
+        0;
+
+    wave =
+        1;
+
+    accumulatedSuns =
+        0;
+
+    selectedPlant =
+        null;
+
+    plants =
+        [];
+
+    zombies =
+        [];
+
+    projectiles =
+        [];
+
+    zombieSpawnTimer =
+        0;
+
+    extraSpawnTimer =
+        0;
+
+    scoreSaved =
+        false;
+
+    gameStarted =
+        true;
+
+    gameRunning =
+        true;
+
+    lastTime =
+        performance.now();
+
+    /*
+       Limpa possíveis elementos antigos.
+    */
+
+    document
+        .querySelectorAll(
+            ".plant,.zombie,.projectile"
+        )
+        .forEach(
+            el =>
+            el.remove()
+        );
+
+    document
+        .querySelectorAll(
+            ".plantBtn"
+        )
+        .forEach(
+            btn =>
+            btn.classList.remove(
+                "selected"
+            )
+        );
+
+    gameOverScreen.style.display =
+        "none";
+
+    mainMenu.style.display =
+        "none";
+
+    rankingScreen.style.display =
+        "none";
+
+    message.textContent =
+        "Escolha uma planta e clique em um espaço vazio.";
+
+    updateHUD();
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
+
+/* =========================================================
+   LOOP
+========================================================= */
+
+function gameLoop(
+    time
+){
+
+    if(
+        !gameRunning
+    )
+        return;
+
+    const delta =
+        time -
+        lastTime;
+
+    lastTime =
+        time;
+
+    updateWave();
+
+    updatePlants();
+    updateHealers();
+
+    updateProjectiles();
+
+    updateZombies(
+        delta
+    );
+
+    /*
+       Se o jogo terminou durante
+       updateZombies(), não continua.
+    */
+
+    if(
+        !gameRunning
+    )
+        return;
+
+    zombieSpawnTimer +=
+        delta;
+
+
+    /* =========================
+       ZUMBI PRINCIPAL
+    ========================= */
+
+    if(
+        zombieSpawnTimer >=
+        spawnRate()
+    ){
+
+        zombieSpawnTimer =
+            0;
+
+        spawnZombie(
+            chooseZombieType()
+        );
+
+    }
+
+
+    /*
+       SPAWN EXTRA
+
+       Também fica 3× mais rápido
+       a partir da onda 5.
+    */
+
+    let extraInterval =
+        6000;
+
+    if(
+        wave >= 5
+    ){
+
+        extraInterval /=
+            2;
+
+    }
+
+    extraSpawnTimer +=
+        delta;
+
+    if(
+        extraSpawnTimer >=
+        extraInterval &&
+        zombies.length <
+        2 +
+        Math.floor(
+            wave / 2
+        )
+    ){
+
+        extraSpawnTimer =
+            0;
+
+        spawnZombie(
+            chooseZombieType()
+        );
+
+    }
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
+
+/* =========================================================
+   BOTÃO JOGAR
+========================================================= */
+
+startGameBtn.onclick =
+    startGame;
+
+
+/* =========================================================
+   ENTER NO NOME
+========================================================= */
+
+playerNameInput.addEventListener(
+    "keydown",
+    function(event){
+
+        if(
+            event.key ===
+            "Enter"
+        ){
+
+            startGame();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   ABRIR RANKING
+========================================================= */
+
+openRankingBtn.onclick =
+    async function(){
+
+        mainMenu.style.display =
+            "none";
+
+        rankingScreen.style.display =
+            "flex";
+
+        await loadRanking();
+
+    };
+
+
+/* =========================================================
+   FECHAR RANKING
+========================================================= */
+
+closeRankingBtn.onclick =
+    function(){
+
+        rankingScreen.style.display =
+            "none";
+
+        mainMenu.style.display =
+            "flex";
+
+    };
+
+
+/* =========================================================
+   JOGAR NOVAMENTE
+========================================================= */
+
+restartBtn.onclick =
+    function(){
+
+        /*
+           Mantém o mesmo nome
+           e reinicia a página.
+        */
+
+        location.reload();
+
+    };
+
+
+/* =========================================================
+   VOLTAR AO MENU
+========================================================= */
+
+backToMenu.onclick =
+    function(){
+
+        location.reload();
+
+    };
+
+
+/* =========================================================
+   RECUPERAR NOME SALVO
+========================================================= */
+
+const savedPlayerName =
+    localStorage.getItem(
+        "ludixPvZPlayerName"
+    );
+
+if(savedPlayerName){
+
+    playerNameInput.value =
+        savedPlayerName;
+
+}
+
+
+/* =========================================================
+   ESTADO INICIAL
+========================================================= */
+
+updateHUD();
+
+/*
+   O jogo NÃO começa aqui.
+   O jogador precisa primeiro
+   colocar o nome e clicar em JOGAR.
+*/
+
+</script>
+
+</body>
+</html>
