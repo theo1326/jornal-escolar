@@ -1,1 +1,2331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Basquete 2 Jogadores</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#10131a;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    color:white;
+}
+
+canvas{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+}
+
+#menu,
+#gameOver{
+    position:fixed;
+    inset:0;
+    z-index:10;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #26364d 0%,
+            #111721 48%,
+            #080b10 100%
+        );
+}
+
+.panel{
+    width:min(620px,90vw);
+    padding:42px;
+
+    border-radius:24px;
+
+    background:rgba(13,18,27,.95);
+
+    border:2px solid rgba(255,255,255,.12);
+
+    box-shadow:
+        0 25px 80px rgba(0,0,0,.6);
+
+    text-align:center;
+}
+
+.panel h1{
+    font-size:42px;
+    margin-bottom:12px;
+}
+
+.panel p{
+    color:#c8d0dc;
+    line-height:1.6;
+    margin-bottom:25px;
+}
+
+button{
+    border:0;
+    border-radius:12px;
+
+    padding:15px 30px;
+
+    font-size:18px;
+    font-weight:bold;
+
+    cursor:pointer;
+
+    background:#287cff;
+    color:white;
+}
+
+button:hover{
+    filter:brightness(1.12);
+}
+
+.controls{
+    margin:20px 0 28px;
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:15px;
+}
+
+.controlBox{
+    padding:15px;
+
+    border-radius:14px;
+
+    background:rgba(255,255,255,.06);
+
+    border:
+        1px solid
+        rgba(255,255,255,.08);
+
+    line-height:1.7;
+}
+
+.controlBox strong{
+    display:block;
+    margin-bottom:8px;
+}
+
+.blue{
+    color:#4f91ff;
+}
+
+.red{
+    color:#ff5757;
+}
+
+.hidden{
+    display:none !important;
+}
+
+#gameOver h1{
+    font-size:40px;
+    margin-bottom:15px;
+}
+
+.finalScore{
+    font-size:32px;
+    font-weight:bold;
+    margin:20px 0 28px;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+
+<!-- =====================================================
+     MENU
+===================================================== -->
+
+<div id="menu">
+
+    <div class="panel">
+
+        <h1>
+            🏀 Basquete 2 Jogadores
+        </h1>
+
+        <p>
+            Jogue uma partida de basquete
+            contra outra pessoa no mesmo computador.
+        </p>
+
+        <div class="controls">
+
+            <div class="controlBox">
+
+                <strong class="blue">
+                    🔵 JOGADOR 1
+                </strong>
+
+                A / D — Mover<br>
+                W — Pular<br>
+                S — Agachar<br>
+                <b>F — Arremessar</b>
+
+            </div>
+
+            <div class="controlBox">
+
+                <strong class="red">
+                    🔴 JOGADOR 2
+                </strong>
+
+                ← / → — Mover<br>
+                ↑ — Pular<br>
+                ↓ — Agachar<br>
+                <b>L — Arremessar</b>
+
+            </div>
+
+        </div>
+
+        <p>
+            🏆 Primeiro jogador a fazer
+            5 cestas vence.<br>
+
+            Se o tempo acabar,
+            vence quem tiver mais cestas.
+        </p>
+
+        <button id="startBtn">
+            COMEÇAR PARTIDA
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     GAME OVER
+===================================================== -->
+
+<div id="gameOver" class="hidden">
+
+    <div class="panel">
+
+        <h1 id="winnerText">
+            🏆 FIM DE JOGO
+        </h1>
+
+        <div
+            class="finalScore"
+            id="finalScore"
+        >
+            0 × 0
+        </div>
+
+        <button id="restartBtn">
+            JOGAR NOVAMENTE
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   CANVAS
+===================================================== */
+
+const canvas =
+    document.getElementById("game");
+
+const ctx =
+    canvas.getContext("2d");
+
+
+/* =====================================================
+   ELEMENTOS
+===================================================== */
+
+const menu =
+    document.getElementById("menu");
+
+const gameOver =
+    document.getElementById("gameOver");
+
+const startBtn =
+    document.getElementById("startBtn");
+
+const restartBtn =
+    document.getElementById("restartBtn");
+
+const winnerText =
+    document.getElementById("winnerText");
+
+const finalScore =
+    document.getElementById("finalScore");
+
+
+/* =====================================================
+   MUNDO
+===================================================== */
+
+const WORLD_WIDTH = 1600;
+const WORLD_HEIGHT = 900;
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+
+const groundY = 765;
+const gravity = 2100;
+
+
+/* =====================================================
+   ESTADO
+===================================================== */
+
+let playing = false;
+
+let score1 = 0;
+let score2 = 0;
+
+let matchTime = 120;
+
+let resetTimer = 0;
+
+
+/* =====================================================
+   TECLADO
+===================================================== */
+
+const keys = Object.create(null);
+
+
+/*
+    CONTROLE DO TECLADO
+
+    F  = arremesso do jogador 1
+    L  = arremesso do jogador 2
+*/
+
+document.addEventListener("keydown", function(e){
+
+    keys[e.code] = true;
+
+
+    /* =========================================
+       JOGADOR 1 — F
+    ========================================= */
+
+    if(e.code === "KeyF"){
+
+        e.preventDefault();
+
+        if(
+            playing &&
+            ball.heldBy === player1
+        ){
+
+            shootBall(player1);
+
+        }
+
+        return;
+    }
+
+
+    /* =========================================
+       JOGADOR 2 — L
+    ========================================= */
+
+    if(e.code === "KeyL"){
+
+        e.preventDefault();
+
+        if(
+            playing &&
+            ball.heldBy === player2
+        ){
+
+            shootBall(player2);
+
+        }
+
+        return;
+    }
+
+
+    /* =========================================
+       SETAS
+    ========================================= */
+
+    if(
+        e.code === "ArrowLeft" ||
+        e.code === "ArrowRight" ||
+        e.code === "ArrowUp" ||
+        e.code === "ArrowDown"
+    ){
+
+        e.preventDefault();
+
+    }
+
+}, true);
+
+
+document.addEventListener("keyup", function(e){
+
+    keys[e.code] = false;
+
+}, true);
+
+
+/* =====================================================
+   TAMANHO
+===================================================== */
+
+function resize(){
+
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = W;
+    canvas.height = H;
+
+}
+
+window.addEventListener(
+    "resize",
+    resize
+);
+
+resize();
+
+
+/* =====================================================
+   CESTAS
+===================================================== */
+
+const basket1 = {
+    x:125,
+    rimY:405,
+    rimWidth:86
+};
+
+const basket2 = {
+    x:1475,
+    rimY:405,
+    rimWidth:86
+};
+
+
+/* =====================================================
+   JOGADOR 1
+===================================================== */
+
+const player1 = {
+
+    x:400,
+    y:groundY-105,
+
+    vx:0,
+    vy:0,
+
+    width:62,
+    height:105,
+
+    color:"#287cff",
+    dark:"#104aaf",
+
+    facing:1,
+
+    onGround:true,
+    crouching:false,
+
+    shootCooldown:0
+
+};
+
+
+/* =====================================================
+   JOGADOR 2
+===================================================== */
+
+const player2 = {
+
+    x:1138,
+    y:groundY-105,
+
+    vx:0,
+    vy:0,
+
+    width:62,
+    height:105,
+
+    color:"#e63c3c",
+    dark:"#9d1717",
+
+    facing:-1,
+
+    onGround:true,
+    crouching:false,
+
+    shootCooldown:0
+
+};
+
+
+/* =====================================================
+   BOLA
+===================================================== */
+
+const ball = {
+
+    x:400,
+    y:groundY-105,
+
+    z:0,
+
+    vx:0,
+    vy:0,
+    vz:0,
+
+    radius:19,
+
+    heldBy:player1,
+
+    scored:false,
+
+    /*
+        NOVO:
+        impede que o jogador pegue
+        a bola imediatamente depois
+        de arremessá-la.
+    */
+    pickupCooldown:0
+
+};
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+function resetGame(){
+
+    score1 = 0;
+    score2 = 0;
+
+    matchTime = 120;
+    resetTimer = 0;
+
+
+    player1.x = 400;
+    player1.y =
+        groundY-player1.height;
+
+    player1.vx = 0;
+    player1.vy = 0;
+
+    player1.onGround = true;
+    player1.crouching = false;
+    player1.shootCooldown = 0;
+
+
+    player2.x = 1138;
+    player2.y =
+        groundY-player2.height;
+
+    player2.vx = 0;
+    player2.vy = 0;
+
+    player2.onGround = true;
+    player2.crouching = false;
+    player2.shootCooldown = 0;
+
+
+    ball.x = player1.x;
+    ball.y = player1.y;
+
+    ball.z = 0;
+
+    ball.vx = 0;
+    ball.vy = 0;
+    ball.vz = 0;
+
+    ball.heldBy = player1;
+
+    ball.scored = false;
+
+    ball.pickupCooldown = 0;
+
+}
+
+
+/* =====================================================
+   COMEÇAR
+===================================================== */
+
+function startGame(){
+
+    resetGame();
+
+    menu.classList.add("hidden");
+
+    gameOver.classList.add("hidden");
+
+    playing = true;
+
+}
+
+
+/* =====================================================
+   FINAL
+===================================================== */
+
+function finishGame(){
+
+    if(!playing){
+        return;
+    }
+
+    playing = false;
+
+
+    if(score1 > score2){
+
+        winnerText.textContent =
+            "🔵 JOGADOR 1 VENCEU!";
+
+    }
+    else if(score2 > score1){
+
+        winnerText.textContent =
+            "🔴 JOGADOR 2 VENCEU!";
+
+    }
+    else{
+
+        winnerText.textContent =
+            "🤝 EMPATE!";
+
+    }
+
+
+    finalScore.textContent =
+        "JOGADOR 1   " +
+        score1 +
+        " × " +
+        score2 +
+        "   JOGADOR 2";
+
+
+    gameOver.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+/* =====================================================
+   POSIÇÃO DA MÃO
+===================================================== */
+
+function getHandPosition(player){
+
+    return {
+
+        x:
+            player.x +
+            player.width/2 +
+            player.facing*42,
+
+        y:
+            player.y+43
+
+    };
+
+}
+
+
+/* =====================================================
+   ARREMESSO — F / L
+===================================================== */
+
+function shootBall(player){
+
+    if(!playing){
+        return;
+    }
+
+
+    if(ball.heldBy !== player){
+        return;
+    }
+
+
+    if(player.shootCooldown > 0){
+        return;
+    }
+
+
+    player.shootCooldown = 0.65;
+
+
+    const target =
+        player === player1
+        ? basket2
+        : basket1;
+
+
+    const hand =
+        getHandPosition(player);
+
+
+    /*
+        SOLTA A BOLA
+    */
+
+    ball.heldBy = null;
+
+
+    ball.x = hand.x;
+    ball.y = hand.y;
+
+
+    /*
+        A bola começa
+        ligeiramente acima da mão.
+    */
+
+    ball.z = 20;
+
+
+    /*
+        NOVO:
+        impede o jogador de pegar
+        a bola imediatamente.
+    */
+
+    ball.pickupCooldown = 0.35;
+
+
+    /*
+        DISTÂNCIA ATÉ A CESTA
+    */
+
+    const dx =
+        target.x -
+        ball.x;
+
+
+    /*
+        MOVIMENTO HORIZONTAL
+    */
+
+    ball.vx =
+        dx / 1.15;
+
+
+    /*
+        MOVIMENTO PARA CIMA
+    */
+
+    ball.vz = 1250;
+
+
+    ball.vy = 0;
+
+    ball.scored = false;
+
+}
+
+
+/* =====================================================
+   MOVIMENTO DO JOGADOR
+===================================================== */
+
+function updatePlayer(
+    player,
+    dt,
+    controls
+){
+
+    let moving = false;
+
+
+    if(keys[controls.left]){
+
+        player.vx = -430;
+
+        player.facing = -1;
+
+        moving = true;
+
+    }
+
+
+    if(keys[controls.right]){
+
+        player.vx = 430;
+
+        player.facing = 1;
+
+        moving = true;
+
+    }
+
+
+    if(!moving){
+
+        player.vx *=
+            Math.pow(
+                0.0005,
+                dt
+            );
+
+    }
+
+
+    if(
+        keys[controls.jump] &&
+        player.onGround
+    ){
+
+        player.vy = -820;
+
+        player.onGround = false;
+
+    }
+
+
+    player.crouching =
+        !!keys[controls.down];
+
+
+    player.vy +=
+        gravity*dt;
+
+
+    player.x +=
+        player.vx*dt;
+
+
+    player.y +=
+        player.vy*dt;
+
+
+    if(
+        player.y +
+        player.height >=
+        groundY
+    ){
+
+        player.y =
+            groundY-player.height;
+
+        player.vy = 0;
+
+        player.onGround = true;
+
+    }
+
+
+    player.x =
+        Math.max(
+            55,
+            Math.min(
+                WORLD_WIDTH -
+                55 -
+                player.width,
+                player.x
+            )
+        );
+
+
+    if(player.shootCooldown > 0){
+
+        player.shootCooldown -= dt;
+
+    }
+
+}
+
+
+/* =====================================================
+   BOLA
+===================================================== */
+
+function updateBall(dt){
+
+    /*
+        NOVO:
+        diminui o tempo de bloqueio
+        para pegar a bola.
+    */
+
+    if(ball.pickupCooldown > 0){
+
+        ball.pickupCooldown -= dt;
+
+        if(ball.pickupCooldown < 0){
+            ball.pickupCooldown = 0;
+        }
+
+    }
+
+
+    if(ball.heldBy){
+
+        const hand =
+            getHandPosition(
+                ball.heldBy
+            );
+
+        ball.x = hand.x;
+        ball.y = hand.y;
+        ball.z = 0;
+
+        return;
+
+    }
+
+
+    ball.x +=
+        ball.vx*dt;
+
+    ball.y +=
+        ball.vy*dt;
+
+
+    ball.vz -=
+        gravity*dt;
+
+    ball.z +=
+        ball.vz*dt;
+
+
+    if(ball.z < 0){
+
+        ball.z = 0;
+
+
+        if(
+            Math.abs(ball.vz) > 180
+        ){
+
+            ball.vz *= -0.48;
+
+        }
+        else{
+
+            ball.vz = 0;
+
+        }
+
+
+        ball.vx *= 0.88;
+
+    }
+
+
+    if(ball.x < 25){
+
+        ball.x = 25;
+
+        ball.vx *= -0.55;
+
+    }
+
+
+    if(
+        ball.x >
+        WORLD_WIDTH-25
+    ){
+
+        ball.x =
+            WORLD_WIDTH-25;
+
+        ball.vx *= -0.55;
+
+    }
+
+}
+
+
+/* =====================================================
+   PEGAR BOLA
+===================================================== */
+
+function tryPickupBall(player){
+
+    if(ball.heldBy){
+        return;
+    }
+
+
+    /*
+        NOVO:
+        não permite pegar a bola
+        durante o pequeno intervalo
+        após o arremesso.
+    */
+
+    if(ball.pickupCooldown > 0){
+        return;
+    }
+
+
+    if(ball.z > 95){
+        return;
+    }
+
+
+    const playerCenterX =
+        player.x +
+        player.width/2;
+
+
+    const playerCenterY =
+        player.y +
+        player.height/2;
+
+
+    const dx =
+        ball.x -
+        playerCenterX;
+
+
+    const dy =
+        ball.y -
+        playerCenterY;
+
+
+    const distance =
+        Math.sqrt(
+            dx*dx +
+            dy*dy
+        );
+
+
+    if(distance < 125){
+
+        ball.heldBy = player;
+
+        ball.vx = 0;
+        ball.vy = 0;
+        ball.vz = 0;
+
+    }
+
+}
+
+
+/* =====================================================
+   CESTA
+===================================================== */
+
+function checkBasketCollision(){
+
+    if(ball.heldBy){
+        return;
+    }
+
+    if(ball.scored){
+        return;
+    }
+
+
+    const baskets = [
+
+        {
+            basket:basket1,
+            player:2
+        },
+
+        {
+            basket:basket2,
+            player:1
+        }
+
+    ];
+
+
+    for(const item of baskets){
+
+        const b =
+            item.basket;
+
+
+        const horizontal =
+            Math.abs(
+                ball.x-b.x
+            );
+
+
+        const ballScreenY =
+            ball.y-ball.z;
+
+
+        const vertical =
+            Math.abs(
+                ballScreenY-b.rimY
+            );
+
+
+        if(
+            horizontal <
+            b.rimWidth/2
+            &&
+            vertical < 22
+            &&
+            ball.vz < 0
+        ){
+
+            ball.scored = true;
+
+
+            if(item.player === 1){
+                score1++;
+            }
+            else{
+                score2++;
+            }
+
+
+            const nextPlayer =
+                item.player === 1
+                ? player2
+                : player1;
+
+
+            ball.heldBy =
+                nextPlayer;
+
+            ball.x =
+                nextPlayer.x;
+
+            ball.y =
+                nextPlayer.y;
+
+            ball.z = 0;
+
+            ball.vx = 0;
+            ball.vy = 0;
+            ball.vz = 0;
+
+            ball.pickupCooldown = 0;
+
+
+            if(
+                score1 >= 5 ||
+                score2 >= 5
+            ){
+
+                setTimeout(
+                    function(){
+
+                        if(playing){
+                            finishGame();
+                        }
+
+                    },
+                    450
+                );
+
+                return;
+
+            }
+
+
+            resetTimer = 1.1;
+
+            return;
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   TEMPO
+===================================================== */
+
+function updateTimer(dt){
+
+    if(!playing){
+        return;
+    }
+
+
+    matchTime -= dt;
+
+
+    if(matchTime <= 0){
+
+        matchTime = 0;
+
+        finishGame();
+
+    }
+
+}
+
+
+/* =====================================================
+   UPDATE
+===================================================== */
+
+function update(dt){
+
+    if(!playing){
+        return;
+    }
+
+
+    if(resetTimer > 0){
+
+        resetTimer -= dt;
+
+        if(resetTimer < 0){
+            resetTimer = 0;
+        }
+
+    }
+
+
+    updatePlayer(
+        player1,
+        dt,
+        {
+            left:"KeyA",
+            right:"KeyD",
+            jump:"KeyW",
+            down:"KeyS"
+        }
+    );
+
+
+    updatePlayer(
+        player2,
+        dt,
+        {
+            left:"ArrowLeft",
+            right:"ArrowRight",
+            jump:"ArrowUp",
+            down:"ArrowDown"
+        }
+    );
+
+
+    if(resetTimer <= 0){
+
+        tryPickupBall(player1);
+
+        tryPickupBall(player2);
+
+    }
+
+
+    updateBall(dt);
+
+    checkBasketCollision();
+
+    updateTimer(dt);
+
+}
+
+
+/* =====================================================
+   FUNDO
+===================================================== */
+
+function drawBackground(){
+
+    const scaleX =
+        W/WORLD_WIDTH;
+
+    const scaleY =
+        H/WORLD_HEIGHT;
+
+
+    ctx.save();
+
+    ctx.scale(
+        scaleX,
+        scaleY
+    );
+
+
+    const sky =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            groundY
+        );
+
+
+    sky.addColorStop(
+        0,
+        "#172334"
+    );
+
+
+    sky.addColorStop(
+        1,
+        "#405a76"
+    );
+
+
+    ctx.fillStyle = sky;
+
+
+    ctx.fillRect(
+        0,
+        0,
+        WORLD_WIDTH,
+        groundY
+    );
+
+
+    /* ARQUIBANCADAS */
+
+    ctx.fillStyle =
+        "#202832";
+
+
+    ctx.fillRect(
+        0,
+        220,
+        WORLD_WIDTH,
+        280
+    );
+
+
+    for(
+        let row=0;
+        row<5;
+        row++
+    ){
+
+        const y =
+            260 +
+            row*48;
+
+
+        ctx.fillStyle =
+            row%2===0
+            ? "#293440"
+            : "#242e39";
+
+
+        ctx.fillRect(
+            0,
+            y,
+            WORLD_WIDTH,
+            38
+        );
+
+    }
+
+
+    /* PÚBLICO */
+
+    for(
+        let row=0;
+        row<5;
+        row++
+    ){
+
+        for(
+            let x=25;
+            x<WORLD_WIDTH;
+            x+=42
+        ){
+
+            const y =
+                250 +
+                row*48;
+
+
+            ctx.fillStyle =
+                row%3===0
+                ? "#d7a36d"
+                : "#b7c0ca";
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                y,
+                8,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
+
+
+            ctx.fillStyle =
+                "#303b49";
+
+
+            ctx.fillRect(
+                x-9,
+                y+8,
+                18,
+                25
+            );
+
+        }
+
+    }
+
+
+    /* PISO */
+
+    const floor =
+        ctx.createLinearGradient(
+            0,
+            groundY,
+            0,
+            WORLD_HEIGHT
+        );
+
+
+    floor.addColorStop(
+        0,
+        "#d38b42"
+    );
+
+
+    floor.addColorStop(
+        1,
+        "#8d4f21"
+    );
+
+
+    ctx.fillStyle = floor;
+
+
+    ctx.fillRect(
+        0,
+        groundY,
+        WORLD_WIDTH,
+        WORLD_HEIGHT-groundY
+    );
+
+
+    /* LINHAS */
+
+    ctx.strokeStyle =
+        "rgba(255,255,255,.75)";
+
+    ctx.lineWidth = 6;
+
+
+    ctx.strokeRect(
+        25,
+        groundY+15,
+        WORLD_WIDTH-50,
+        110
+    );
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        WORLD_WIDTH/2,
+        groundY
+    );
+
+    ctx.lineTo(
+        WORLD_WIDTH/2,
+        WORLD_HEIGHT
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        WORLD_WIDTH/2,
+        groundY+65,
+        70,
+        0,
+        Math.PI*2
+    );
+
+    ctx.stroke();
+
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   CESTA
+===================================================== */
+
+function drawBasket(basket){
+
+    const scaleX =
+        W/WORLD_WIDTH;
+
+    const scaleY =
+        H/WORLD_HEIGHT;
+
+
+    ctx.save();
+
+    ctx.scale(
+        scaleX,
+        scaleY
+    );
+
+
+    const x =
+        basket.x;
+
+
+    /* POSTE */
+
+    ctx.fillStyle =
+        "#18202a";
+
+
+    ctx.fillRect(
+        x-10,
+        basket.rimY-5,
+        20,
+        groundY-(basket.rimY-5)
+    );
+
+
+    /* TABELA */
+
+    ctx.fillStyle =
+        "#edf3f8";
+
+
+    ctx.fillRect(
+        x-63,
+        basket.rimY-82,
+        126,
+        78
+    );
+
+
+    ctx.strokeStyle =
+        "#111";
+
+
+    ctx.lineWidth = 6;
+
+
+    ctx.strokeRect(
+        x-63,
+        basket.rimY-82,
+        126,
+        78
+    );
+
+
+    /* QUADRADO */
+
+    ctx.strokeStyle =
+        "#d33";
+
+    ctx.lineWidth = 5;
+
+
+    ctx.strokeRect(
+        x-31,
+        basket.rimY-57,
+        62,
+        43
+    );
+
+
+    /* ARO */
+
+    ctx.strokeStyle =
+        "#e85b24";
+
+    ctx.lineWidth = 9;
+
+
+    ctx.beginPath();
+
+
+    ctx.ellipse(
+        x,
+        basket.rimY,
+        basket.rimWidth/2,
+        10,
+        0,
+        0,
+        Math.PI*2
+    );
+
+
+    ctx.stroke();
+
+
+    /* REDE */
+
+    ctx.strokeStyle =
+        "rgba(255,255,255,.8)";
+
+    ctx.lineWidth = 2;
+
+
+    for(
+        let i=-4;
+        i<=4;
+        i++
+    ){
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x+i*9,
+            basket.rimY+4
+        );
+
+        ctx.lineTo(
+            x+i*6,
+            basket.rimY+48
+        );
+
+        ctx.stroke();
+
+    }
+
+
+    for(
+        let i=0;
+        i<5;
+        i++
+    ){
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x-35+i*18,
+            basket.rimY+13
+        );
+
+        ctx.lineTo(
+            x-25+i*13,
+            basket.rimY+43
+        );
+
+        ctx.stroke();
+
+    }
+
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   JOGADOR
+===================================================== */
+
+function drawPlayer(player){
+
+    const scaleX =
+        W/WORLD_WIDTH;
+
+    const scaleY =
+        H/WORLD_HEIGHT;
+
+
+    ctx.save();
+
+    ctx.scale(
+        scaleX,
+        scaleY
+    );
+
+
+    const cx =
+        player.x +
+        player.width/2;
+
+
+    const baseY =
+        player.y +
+        player.height;
+
+
+    /* SOMBRA */
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.25)";
+
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        cx,
+        groundY+2,
+        42,
+        10,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* PERNAS */
+
+    ctx.fillStyle =
+        "#111722";
+
+
+    ctx.fillRect(
+        cx-21,
+        baseY-47,
+        17,
+        48
+    );
+
+
+    ctx.fillRect(
+        cx+4,
+        baseY-47,
+        17,
+        48
+    );
+
+
+    /* TÊNIS */
+
+    ctx.fillStyle =
+        "#f1f1f1";
+
+
+    ctx.fillRect(
+        cx-27,
+        baseY-7,
+        28,
+        9
+    );
+
+
+    ctx.fillRect(
+        cx+2,
+        baseY-7,
+        28,
+        9
+    );
+
+
+    /* CORPO */
+
+    ctx.fillStyle =
+        player.color;
+
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        cx-27,
+        player.y+32,
+        54,
+        48,
+        12
+    );
+
+    ctx.fill();
+
+
+    /* DETALHE */
+
+    ctx.fillStyle =
+        player.dark;
+
+
+    ctx.fillRect(
+        cx-27,
+        player.y+62,
+        54,
+        18
+    );
+
+
+    /* BRAÇO TRASEIRO */
+
+    ctx.strokeStyle =
+        player.dark;
+
+    ctx.lineWidth = 14;
+
+    ctx.lineCap = "round";
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        cx-23,
+        player.y+43
+    );
+
+    ctx.lineTo(
+        cx-38,
+        player.y+76
+    );
+
+    ctx.stroke();
+
+
+    /* BRAÇO */
+
+    const hand =
+        getHandPosition(player);
+
+
+    ctx.strokeStyle =
+        player.color;
+
+
+    ctx.lineWidth = 14;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        cx+
+        player.facing*20,
+        player.y+43
+    );
+
+    ctx.lineTo(
+        hand.x,
+        hand.y
+    );
+
+    ctx.stroke();
+
+
+    /* CABEÇA */
+
+    ctx.fillStyle =
+        "#d69a6a";
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        cx,
+        player.y+20,
+        22,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* CABELO */
+
+    ctx.fillStyle =
+        "#171717";
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        cx,
+        player.y+13,
+        22,
+        Math.PI,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* NÚMERO */
+
+    ctx.fillStyle =
+        "white";
+
+    ctx.font =
+        "bold 24px Arial";
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.fillText(
+        player === player1
+        ? "1"
+        : "2",
+        cx,
+        player.y+66
+    );
+
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   BOLA
+===================================================== */
+
+function drawBall(){
+
+    const scaleX =
+        W/WORLD_WIDTH;
+
+    const scaleY =
+        H/WORLD_HEIGHT;
+
+
+    ctx.save();
+
+    ctx.scale(
+        scaleX,
+        scaleY
+    );
+
+
+    const screenY =
+        ball.y-ball.z;
+
+
+    /* SOMBRA */
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.28)";
+
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        ball.x,
+        ball.y+10,
+        ball.radius *
+        Math.max(
+            .45,
+            1-ball.z/600
+        ),
+        7,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* BOLA */
+
+    const gradient =
+        ctx.createRadialGradient(
+            ball.x-7,
+            screenY-7,
+            2,
+            ball.x,
+            screenY,
+            ball.radius
+        );
+
+
+    gradient.addColorStop(
+        0,
+        "#ffb347"
+    );
+
+
+    gradient.addColorStop(
+        1,
+        "#d94c16"
+    );
+
+
+    ctx.fillStyle =
+        gradient;
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        ball.x,
+        screenY,
+        ball.radius,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* COSTURAS */
+
+    ctx.strokeStyle =
+        "#35170b";
+
+    ctx.lineWidth = 2.5;
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        ball.x,
+        screenY,
+        ball.radius*.7,
+        -1.1,
+        1.1
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        ball.x,
+        screenY,
+        ball.radius*.7,
+        2.05,
+        4.25
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        ball.x-ball.radius,
+        screenY
+    );
+
+    ctx.quadraticCurveTo(
+        ball.x,
+        screenY+8,
+        ball.x+ball.radius,
+        screenY
+    );
+
+    ctx.stroke();
+
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   HUD
+===================================================== */
+
+function drawHUD(){
+
+    const scale =
+        W/WORLD_WIDTH;
+
+
+    ctx.save();
+
+    ctx.scale(
+        scale,
+        scale
+    );
+
+
+    /* PLACAR */
+
+    ctx.fillStyle =
+        "rgba(8,12,18,.82)";
+
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        WORLD_WIDTH/2-180,
+        25,
+        360,
+        92,
+        18
+    );
+
+    ctx.fill();
+
+
+    ctx.strokeStyle =
+        "rgba(255,255,255,.12)";
+
+    ctx.lineWidth = 2;
+
+    ctx.stroke();
+
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.font =
+        "bold 42px Arial";
+
+
+    ctx.fillStyle =
+        "#4d91ff";
+
+
+    ctx.fillText(
+        score1,
+        WORLD_WIDTH/2-100,
+        80
+    );
+
+
+    ctx.fillStyle =
+        "#fff";
+
+
+    ctx.font =
+        "bold 24px Arial";
+
+
+    ctx.fillText(
+        "×",
+        WORLD_WIDTH/2,
+        80
+    );
+
+
+    ctx.font =
+        "bold 42px Arial";
+
+
+    ctx.fillStyle =
+        "#ff5757";
+
+
+    ctx.fillText(
+        score2,
+        WORLD_WIDTH/2+100,
+        80
+    );
+
+
+    /* TEMPO */
+
+    const minutes =
+        Math.floor(
+            matchTime/60
+        );
+
+
+    const seconds =
+        Math.floor(
+            matchTime%60
+        )
+        .toString()
+        .padStart(2,"0");
+
+
+    ctx.fillStyle =
+        "#fff";
+
+    ctx.font =
+        "bold 20px Arial";
+
+
+    ctx.fillText(
+        minutes+":"+seconds,
+        WORLD_WIDTH/2,
+        107
+    );
+
+
+    /* INDICADOR */
+
+    if(
+        ball.heldBy === player1
+    ){
+
+        ctx.fillStyle =
+            "#4d91ff";
+
+        ctx.font =
+            "bold 18px Arial";
+
+
+        ctx.fillText(
+            "F  •  ARREMESSAR",
+            player1.x+30,
+            player1.y-20
+        );
+
+    }
+
+
+    if(
+        ball.heldBy === player2
+    ){
+
+        ctx.fillStyle =
+            "#ff5757";
+
+        ctx.font =
+            "bold 18px Arial";
+
+
+        ctx.fillText(
+            "L  •  ARREMESSAR",
+            player2.x+30,
+            player2.y-20
+        );
+
+    }
+
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   DESENHAR
+===================================================== */
+
+function draw(){
+
+    ctx.clearRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    drawBackground();
+
+    drawBasket(basket1);
+
+    drawBasket(basket2);
+
+    drawPlayer(player1);
+
+    drawPlayer(player2);
+
+    drawBall();
+
+    drawHUD();
+
+}
+
+
+/* =====================================================
+   LOOP
+===================================================== */
+
+let lastTime =
+    performance.now();
+
+
+function loop(now){
+
+    const dt =
+        Math.min(
+            0.033,
+            (now-lastTime)/1000
+        );
+
+
+    lastTime = now;
+
+
+    update(dt);
+
+    draw();
+
+
+    requestAnimationFrame(
+        loop
+    );
+
+}
+
+
+/* =====================================================
+   BOTÕES
+===================================================== */
+
+startBtn.addEventListener(
+    "click",
+    function(){
+
+        startGame();
+
+    }
+);
+
+
+restartBtn.addEventListener(
+    "click",
+    function(){
+
+        gameOver.classList.add(
+            "hidden"
+        );
+
+        startGame();
+
+    }
+);
+
+
+/* =====================================================
+   INÍCIO
+===================================================== */
+
+resetGame();
+
+draw();
+
+requestAnimationFrame(
+    loop
+);
+
+</script>
+
+</body>
+</html>
