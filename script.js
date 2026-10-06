@@ -6,14 +6,6 @@ const games = [
     description: "Explore, construa, quebre blocos e descubra um mundo cheio de aventuras.",
     link: "jogos/jogos/sandbox/index.html"
     },
-    
-    {
-        name: "They Are Coming",
-        category: "Ação",
-        icon: "🧟",
-        description: "Sobreviva às ondas de inimigos, compre armas e tente chegar o mais longe possível.",
-        link: "jogos/they-are-coming/"
-    },
 
     {
         name: "Basquete 2 Jogadores",
